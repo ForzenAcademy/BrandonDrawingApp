@@ -1,6 +1,8 @@
 package com.example.drawingactivity
 
+import android.graphics.Bitmap
 import android.graphics.Color
+import androidx.lifecycle.ViewModel
 
 /**
  * A viewModel that controls the colors set in multiple views
@@ -8,13 +10,12 @@ import android.graphics.Color
  * ViewStates is used in the lambda onUpdate to update views in whatever activity it is invoked from
  * cyclePrimaryColor is the internal function that sets a new Primary Color by selecting from a list
  */
-class CustomColorViewModel(
-
-) {
+class CustomColorViewModel : ViewModel() {
     var onUpdate: ((ViewState) -> Unit)? = null
 
     data class ViewState(
         var primaryColor: Int,
+        var currentBitmap: Bitmap?,
     )
 
     private var primaryColors = listOf(Color.BLACK, Color.RED, Color.GREEN, Color.BLUE)
@@ -29,10 +30,16 @@ class CustomColorViewModel(
         updateViews()
     }
 
+    var currentBitmap: Bitmap? = null
+
+    fun saveUserBitmap(b: Bitmap?) {
+        currentBitmap = b
+    }
+
     private fun updateViews() {
         onUpdate?.invoke(
             ViewState(
-                primaryColor
+                primaryColor, currentBitmap
             )
         )
     }

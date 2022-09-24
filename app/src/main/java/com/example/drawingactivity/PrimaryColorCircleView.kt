@@ -13,7 +13,7 @@ import android.view.View
  * This color reflects what the current primary color of the app is
  * When clicked, this circle will redraw itself with a new color and call to change the primary color of the app
  * has a companion object that allows adjustment of the radius of the circle
- * onChangeColor is the lambda that is called on click to tell the viewModel to change the primary color
+ * onChangeColor is the lambda that is called on click to change the primary color that is set
  * circlePrimaryColor is how the color of the circle is adjusted
  */
 @SuppressLint("ClickableViewAccessibility")
@@ -23,6 +23,9 @@ class PrimaryColorCircleView @JvmOverloads constructor(
     defStyle: Int = 0
 ) : View(context, attrs, defStyle) {
 
+    /**
+     * This lambda calls for an update to the color
+     */
     var onChangeColor: (() -> Unit)? = null
     var circlePrimaryColor = Color.BLACK
 
