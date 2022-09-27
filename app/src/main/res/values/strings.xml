@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">DrawingActivity</string>
+    <string name="addLayerDefaultName">Layer %1$d</string>
+    <string name="addLayerDialogTitle">Add Layer</string>
+    <string name="addLayerSuccess">Created: %1$s</string>
+    <string name="addLayerFailure">Layer Name in use</string>
+    <string name="addLayerPositiveButton">OK</string>
+    <string name="addLayerNegativeButton">Cancel</string>
 </resources>
