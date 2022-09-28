@@ -1,17 +1,16 @@
-<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:gravity="center"
     android:orientation="vertical"
-    tools:context=".MainActivity">
+    tools:context=".DrawActivity">
 
     <com.example.drawingactivity.DrawableAreaView
         android:id="@+id/drawableArea"
         android:layout_width="200dp"
         android:layout_height="200dp"
-        android:layout_margin="16dp" />
+        android:padding="@dimen/largePadding" />
 
     <LinearLayout
         android:layout_width="wrap_content"
@@ -23,14 +22,19 @@
             android:id="@+id/colorCircle"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:layout_margin="8dp" />
-
+            android:padding="@dimen/mediumPadding" />
     </LinearLayout>
 
     <Button
-        android:id="@+id/add_layer"
+        android:id="@+id/addLayer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Add Layer"/>
+        android:text="@string/buttonAddLayerText" />
+
+    <Button
+        android:id="@+id/viewLayers"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/buttonViewLayersText" />
 
 </LinearLayout>

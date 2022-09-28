@@ -1,0 +1,7 @@
+<resources>
+    <dimen name="minorPadding">4dp</dimen>
+    <dimen name="mediumPadding">8dp</dimen>
+    <dimen name="largePadding">16dp</dimen>
+    <dimen name="errorText">11sp</dimen>
+    <dimen name="largeText">16sp</dimen>
+</resources>
