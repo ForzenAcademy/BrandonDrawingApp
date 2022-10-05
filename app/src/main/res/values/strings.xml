@@ -1,9 +1,17 @@
 <resources>
     <string name="app_name">DrawingActivity</string>
-    <string name="addLayerDefaultName">Layer %1$d</string>
-    <string name="addLayerDialogTitle">Add Layer</string>
+    <string name="layerHint">Layer %1$d</string>
+    <string name="addLayerDialogTitle">Name Layer</string>
     <string name="addLayerSuccess">Created: %1$s</string>
-    <string name="addLayerFailure">Layer Name in use</string>
+    <string name="deleteLayerSuccess">Deleted: %1$s</string>
+    <string name="editLayerSuccess">Renamed: %1$s To: %2$s</string>
+    <string name="addLayerFailure">Failed to Create Layer.</string>
+    <string name="layerNameTooLong">Layer Name is too long!</string>
+    <string name="layerNameInUse">Layer Name in use.</string>
     <string name="addLayerPositiveButton">OK</string>
     <string name="addLayerNegativeButton">Cancel</string>
+    <string name="editLayerDialogTitle">Edit Layer</string>
+    <string name="buttonAddLayerText">Add Layer</string>
+    <string name="buttonViewLayersText">View Layers</string>
+    <string name="buttonCloseLayerListViewText">Close</string>
 </resources>
