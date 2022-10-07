@@ -13,15 +13,19 @@ class DrawActivity : AppCompatActivity() {
     private var isAddDialogOpen = false
     private var isEditDialogOpen = false
     private var isLayerListViewSheetOpen = false
+    private var isColorPickerSheetOpen = false
+
+    /**
+     * Saves the status of the layerList dialog if the user happens to somehow close or leave it after hitting edit or delete.
+     * This is done to return the values on what is being edited into the dialog so it reopens correctly.
+     */
     private var bottomSheetLambda: ((Int, String?, DialogOperation) -> Unit)? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
         val drawableArea = findViewById<DrawableAreaView>(R.id.drawableArea)
         drawableArea.onBitmapDrawn = { bitmap -> viewModel.setCurrentBitmapState(bitmap) }
-        viewModel.currentBitmap?.let { drawableArea.setBitmap(it) }
         val colorSelector = findViewById<PrimaryColorCircleView>(R.id.colorCircle)
         colorSelector.onChangeColor = { viewModel.cycleCurrentColor() }
 
@@ -33,6 +37,10 @@ class DrawActivity : AppCompatActivity() {
             viewModel.setLayerListViewState()
         }
 
+        findViewById<Button>(R.id.gradientButton).setOnClickListener {
+            viewModel.setColorPickerViewState()
+        }
+
         viewModel.apply {
             onAddLayerComplete = {
                 Toast.makeText(
@@ -41,12 +49,20 @@ class DrawActivity : AppCompatActivity() {
                     Toast.LENGTH_SHORT
                 ).show()
             }
-            onDeleteLayerComplete = {
-                Toast.makeText(
-                    this@DrawActivity,
-                    this@DrawActivity.getString(R.string.deleteLayerSuccess, it),
-                    Toast.LENGTH_SHORT
-                ).show()
+            onDeleteOperationComplete = {
+                if (it != null) {
+                    Toast.makeText(
+                        this@DrawActivity,
+                        this@DrawActivity.getString(R.string.deleteLayerSuccess, it),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                } else {
+                    Toast.makeText(
+                        this@DrawActivity,
+                        this@DrawActivity.getString(R.string.deleteLayerFailure),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
             }
             onEditLayerComplete = { oldName, newName ->
                 Toast.makeText(
@@ -58,12 +74,12 @@ class DrawActivity : AppCompatActivity() {
         }
 
         viewModel.onUpdate = {
+            colorSelector.circlePrimaryColor = it.primaryColor
+            drawableArea.setPathColor(it.primaryColor)
+            it.currentBitmap?.let { bitmap -> drawableArea.setBitmap(bitmap) }
             if (it.layerList.isEmpty()) {
                 viewModel.addLayer(this.getString(R.string.layerHint, 1))
             }
-            colorSelector.circlePrimaryColor = it.primaryColor
-            drawableArea.pathPaint.color = it.primaryColor
-            drawableArea.userDrawnBitmap = it.currentBitmap
             if (!it.isLayerSheetOpen && it.isDialogOpen && !isAddDialogOpen) {
                 isAddDialogOpen = true
                 dialogUtils.showDialog(
@@ -80,7 +96,6 @@ class DrawActivity : AppCompatActivity() {
             } else if (!it.isDialogOpen) {
                 isAddDialogOpen = false
             }
-
             if (it.isLayerSheetOpen && !isLayerListViewSheetOpen) {
                 isLayerListViewSheetOpen = true
                 viewModel.setLayerListViewState()
@@ -89,7 +104,9 @@ class DrawActivity : AppCompatActivity() {
                     onDialogComplete = { viewModel.dialogCompleted() },
                     onDelete = { index ->
                         viewModel.deleteLayer(index)
-                        bottomSheetLambda?.invoke(index, null, DialogOperation.DELETE)
+                        if (!viewModel.isLayerListEmpty()) {
+                            bottomSheetLambda?.invoke(index, null, DialogOperation.DELETE)
+                        }
                     },
                     onEdit = { index ->
                         isEditDialogOpen = true
@@ -106,7 +123,8 @@ class DrawActivity : AppCompatActivity() {
                                         newLayerName, index ?: it.editLayerIndex
                                     )
                                     if (index != null) {
-                                        bottomSheetLambda?.invoke(index, newLayerName,
+                                        bottomSheetLambda?.invoke(
+                                            index, newLayerName,
                                             DialogOperation.EDIT
                                         )
                                     } else {
@@ -128,7 +146,8 @@ class DrawActivity : AppCompatActivity() {
                         onSubmit = { newLayerName ->
                             if (newLayerName != null) {
                                 viewModel.editLayer(newLayerName, it.editLayerIndex)
-                                bottomSheetLambda?.invoke(it.editLayerIndex, newLayerName,
+                                bottomSheetLambda?.invoke(
+                                    it.editLayerIndex, newLayerName,
                                     DialogOperation.EDIT
                                 )
                             } else viewModel.dialogCompleted()
@@ -140,7 +159,21 @@ class DrawActivity : AppCompatActivity() {
             } else if (!it.isLayerSheetOpen) {
                 isLayerListViewSheetOpen = false
             }
+            if (it.isColorPickerSheetOpen && !isColorPickerSheetOpen) {
+                isColorPickerSheetOpen = true
+                dialogUtils.colorPickerBottomSheet(
+                    context = this@DrawActivity,
+                    lastHsv = it.hsvArray,
+                    onColorAdjust = { hsv -> hsv?.let { viewModel.setCurrentColor(hsv) } },
+                    onSubmit = { hsv ->
+                        hsv?.let { viewModel.setCurrentColor(hsv) }
+                        viewModel.dialogCompleted()
+                        isColorPickerSheetOpen = false
+                    }
+                )
+            } else if (!it.isColorPickerSheetOpen) {
+                isColorPickerSheetOpen = false
+            }
         }
     }
-
 }
