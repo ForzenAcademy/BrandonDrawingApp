@@ -4,6 +4,7 @@
     <string name="addLayerDialogTitle">Name Layer</string>
     <string name="addLayerSuccess">Created: %1$s</string>
     <string name="deleteLayerSuccess">Deleted: %1$s</string>
+    <string name="deleteLayerFailure">Cannot Delete Last Layer!</string>
     <string name="editLayerSuccess">Renamed: %1$s To: %2$s</string>
     <string name="addLayerFailure">Failed to Create Layer.</string>
     <string name="layerNameTooLong">Layer Name is too long!</string>
@@ -12,6 +13,13 @@
     <string name="addLayerNegativeButton">Cancel</string>
     <string name="editLayerDialogTitle">Edit Layer</string>
     <string name="buttonAddLayerText">Add Layer</string>
+    <string name="buttonGradientText">Pick Color</string>
     <string name="buttonViewLayersText">View Layers</string>
     <string name="buttonCloseLayerListViewText">Close</string>
+    <string name="letterHue">H:</string>
+    <string name="letterSaturation">S:</string>
+    <string name="letterValue">V:</string>
+    <string name="letterRed">R:</string>
+    <string name="letterBlue">B:</string>
+    <string name="letterGreen">G:</string>
 </resources>

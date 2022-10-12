@@ -20,7 +20,11 @@ class RecyclerViewAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val inflater = LayoutInflater.from(parent.context)
         return when (viewType) {
-            LAYER -> LayerViewHolder(inflater.inflate(R.layout.layer_view, parent, false), onDeleteLayer, onEditName)
+            LAYER -> LayerViewHolder(
+                inflater.inflate(R.layout.layer_view, parent, false),
+                onDeleteLayer,
+                onEditName
+            )
             else -> {
                 throw RuntimeException("View Does Not Exist.")
             }
@@ -34,7 +38,6 @@ class RecyclerViewAdapter(
     override fun getItemCount(): Int = data.size
 
     override fun getItemViewType(position: Int): Int = data[position].type
-
 }
 
 abstract class AdapterViewModel(val type: Int) {
@@ -63,7 +66,6 @@ class LayerViewHolder(
     private val layerView: TextView
     private val deleteLayerView: ImageView
     private val editLayerNameView: ImageView
-
 
     init {
         layerView = view.findViewById(R.id.layerName)

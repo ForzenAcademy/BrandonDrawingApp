@@ -15,12 +15,14 @@ class DrawViewModel : ViewModel() {
     private var primaryColors = listOf(Color.BLACK, Color.RED, Color.GREEN, Color.BLUE)
     private var primaryColor = primaryColors[0]
     private var currentColor: Int = 0
-    var currentBitmap: Bitmap? = null
+    private var currentBitmap: Bitmap? = null
     private var layerList = mutableListOf<String>()
     private var currentNewLayerName: String? = null
     private var editLayerIndex: Int = 0
     private var isDialogOpen = false
     private var isBottomSheetOpen = false
+    private var isColorPickerOpen = false
+    private var previousHSVColor: Hsv = Hsv(0f, 0f, 0f)
 
     /**
      * Invoked when a view requests an update from the viewModel.
@@ -44,7 +46,7 @@ class DrawViewModel : ViewModel() {
      * Invoked when a Layer is removed from the List
      * Confirms that the delete was a success
      */
-    var onDeleteLayerComplete: ((String?) -> Unit)? = null
+    var onDeleteOperationComplete: ((String?) -> Unit)? = null
 
     data class ViewState(
         val primaryColor: Int,
@@ -53,7 +55,9 @@ class DrawViewModel : ViewModel() {
         val currentNewLayerName: String?,
         val editLayerIndex: Int,
         val isDialogOpen: Boolean,
-        val isLayerSheetOpen: Boolean
+        val isLayerSheetOpen: Boolean,
+        val isColorPickerSheetOpen: Boolean,
+        val hsvArray: Hsv,
     )
 
     /**
@@ -70,8 +74,8 @@ class DrawViewModel : ViewModel() {
     /**
      * Updates the viewModel with the bitmap provided
      */
-    fun setCurrentBitmapState(b: Bitmap?) {
-        currentBitmap = b
+    fun setCurrentBitmapState(bitmap: Bitmap?) {
+        currentBitmap = bitmap
         updateViewStates()
     }
 
@@ -88,6 +92,11 @@ class DrawViewModel : ViewModel() {
      */
     fun setLayerListViewState() {
         isBottomSheetOpen = true
+        updateViewStates()
+    }
+
+    fun setColorPickerViewState() {
+        isColorPickerOpen = true
         updateViewStates()
     }
 
@@ -109,6 +118,17 @@ class DrawViewModel : ViewModel() {
     }
 
     /**
+     * Updates the viewModel with the current color of the color picker
+     */
+    fun setCurrentColor(Hsv: Hsv) {
+        previousHSVColor = Hsv
+    }
+
+    fun isLayerListEmpty(): Boolean {
+        return layerList.isEmpty()
+    }
+
+    /**
      * Adds a String to a List of Strings
      */
     fun addLayer(layerName: String) {
@@ -122,10 +142,14 @@ class DrawViewModel : ViewModel() {
      * Removes a layer from the list of layers
      */
     fun deleteLayer(index: Int) {
-        val layerName = layerList[index]
-        layerList.removeAt(index)
-        onDeleteLayerComplete?.invoke(layerName)
-        updateViewStates()
+        if (layerList.size == 0) {
+            onDeleteOperationComplete?.invoke(null)
+        } else {
+            val layerName = layerList[index]
+            layerList.removeAt(index)
+            onDeleteOperationComplete?.invoke(layerName)
+            updateViewStates()
+        }
     }
 
     /**
@@ -144,6 +168,7 @@ class DrawViewModel : ViewModel() {
     fun dialogCompleted() {
         isBottomSheetOpen = false
         isDialogOpen = false
+        isColorPickerOpen = false
         currentNewLayerName = null
         editLayerIndex = 0
         updateViewStates()
@@ -158,8 +183,10 @@ class DrawViewModel : ViewModel() {
                 currentNewLayerName,
                 editLayerIndex,
                 isDialogOpen,
-                isBottomSheetOpen
-            )
+                isBottomSheetOpen,
+                isColorPickerOpen,
+                previousHSVColor
+            ),
         )
     }
 }

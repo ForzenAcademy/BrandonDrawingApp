@@ -2,7 +2,12 @@ package com.example.drawingactivity
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.graphics.*
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color.BLACK
+import android.graphics.Color.LTGRAY
+import android.graphics.Paint
+import android.graphics.Path
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
@@ -28,15 +33,7 @@ class DrawableAreaView @JvmOverloads constructor(
      * This is being used to save the bitmap to a different location
      */
     var onBitmapDrawn: ((Bitmap?) -> Unit)? = null
-    var userDrawnBitmap: Bitmap? = null
-
-    var pathPaint = Paint().apply {
-        color = Color.BLACK
-        style = Paint.Style.STROKE
-        strokeWidth = STROKEWIDTH
-        strokeJoin = Paint.Join.ROUND
-        strokeCap = Paint.Cap.ROUND
-    }
+    private var userDrawnBitmap: Bitmap? = null
     private var path: Path? = null
 
     init {
@@ -55,10 +52,14 @@ class DrawableAreaView @JvmOverloads constructor(
         }
     }
 
+    fun setPathColor(color: Int) {
+        pathPaint.color = color
+    }
+
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
         canvas?.apply {
-            drawColor(Color.LTGRAY)
+            drawColor(LTGRAY)
             if (userDrawnBitmap == null) {
                 userDrawnBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
             }
@@ -67,11 +68,18 @@ class DrawableAreaView @JvmOverloads constructor(
         }
     }
 
-    fun setBitmap(b: Bitmap) {
-        userDrawnBitmap = b
+    fun setBitmap(bitmap: Bitmap) {
+        userDrawnBitmap = bitmap
     }
 
-    companion object DrawingWidgetValues {
+    companion object {
         const val STROKEWIDTH = 15f
+        var pathPaint = Paint().apply {
+            color = BLACK
+            style = Paint.Style.STROKE
+            strokeWidth = STROKEWIDTH
+            strokeJoin = Paint.Join.ROUND
+            strokeCap = Paint.Cap.ROUND
+        }
     }
 }
