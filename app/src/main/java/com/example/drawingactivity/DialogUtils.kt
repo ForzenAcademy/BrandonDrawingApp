@@ -22,7 +22,7 @@ object DialogUtils {
 
     fun showDialog(
         context: Context,
-        layerList: List<String>,
+        layerList: List<LayerViewModel>,
         previousInput: String?,
         /**
          * Called whenever text is changed in the editable field.
@@ -50,7 +50,7 @@ object DialogUtils {
             } else errorView.isVisible = false
         }
         builder.apply {
-            setPositiveButton(context.getString(R.string.addLayerPositiveButton)) { _, _ ->
+            setPositiveButton(context.getString(R.string.confirmationButtonTextOk)) { _, _ ->
                 when (textField.text.toString().trim()) {
                     "", textField.hint.toString() -> {
                         onSubmit.invoke(textField.hint.toString())
@@ -59,7 +59,6 @@ object DialogUtils {
                         onSubmit.invoke(textField.text.toString().trim())
                     }
                 }
-                onSubmit.invoke(null)
             }
             setNegativeButton(context.getString(R.string.addLayerNegativeButton)) { _, _ ->
                 onSubmit.invoke(null)
@@ -85,26 +84,52 @@ object DialogUtils {
         }
     }
 
+    fun confirmationDialog(
+        context: Context, title: String, message: String,
+        /**
+         * Lambda that is invoked when the Positive Button is Clicked.
+         * Confirms the operation given.
+         */
+        onSubmit: ((Boolean) -> Unit)
+    ) {
+        val builder = AlertDialog.Builder(context)
+        builder.apply {
+            setTitle(title)
+            setMessage(message)
+            setPositiveButton(context.getString(R.string.confirmationButtonTextConfirm)) { _, _ ->
+                onSubmit(true)
+            }
+            setNegativeButton(context.getString(R.string.cancelButtonText)) { _, _ ->
+                onSubmit(false)
+            }
+            setOnDismissListener {
+                onSubmit(false)
+            }
+        }
+        val dialog: AlertDialog = builder.create()
+        dialog.show()
+    }
+
     fun layerListBottomSheet(
         context: Context,
-        layerList: List<String>,
+        layerList: List<LayerViewModel>,
         /**
          * Opens a Dialog to Delete an object in the list.
          */
-        onDelete: ((Int) -> Unit)?,
+        onDelete: ((LayerViewModel) -> Unit)?,
         /**
          * Opens a Dialog to Edit an object in the list.
          */
-        onEdit: ((Int?) -> Unit)?,
+        onEdit: ((LayerViewModel) -> Unit)?,
         /**
-         * Called when the Dialog Completes through any listener.
-         * This will reset all values to null in preparation for the next opening of the Dialog.
+         * Called when the Sheet is Dismissed.
+         * This will allow for the sheet to be dismissed separately from any Dialogs it opens.
          */
-        onDialogComplete: (() -> Unit)?,
-    ): ((Int, String?, DialogOperation) -> Unit) {
+        onSheetComplete: (() -> Unit)?,
+    ): ((LayerViewModel?, LayerViewModel?, DialogOperation) -> Unit) {
         val sheet = BottomSheetDialog(context)
         val view = LayoutInflater.from(context).inflate(R.layout.recycler_layer_list_layout, null)
-        val data = layerList.map { LayerViewModel(it) }.toMutableList()
+        val data = layerList.map { it }.toMutableList()
         val recyclerView = view.findViewById<RecyclerView>(R.id.listOfLayers)
         recyclerView.apply {
             layoutManager = LinearLayoutManager(context)
@@ -115,7 +140,7 @@ object DialogUtils {
         sheet.apply {
             setOnDismissListener {
                 dismiss()
-                onDialogComplete?.invoke()
+                onSheetComplete?.invoke()
             }
             setContentView(view)
             show()
@@ -123,23 +148,42 @@ object DialogUtils {
         val behavior = BottomSheetBehavior.from(view.parent as View)
         behavior.state = BottomSheetBehavior.STATE_EXPANDED
         behavior.isDraggable = false
-        return { index, newName, operation ->
+        return { model, newModel, operation ->
             when (operation) {
+                DialogOperation.ADD -> {
+                    if (newModel != null) {
+                        data.add(newModel)
+                        recyclerView.adapter?.notifyItemInserted(data.size)
+                    }
+                }
                 DialogOperation.EDIT -> {
-                    data[index] = LayerViewModel(layerName = newName)
-                    recyclerView.adapter?.notifyItemChanged(index, newName)
+                    model?.let {
+                        val index = data.indexOf(model)
+                        if (newModel != null) {
+                            data[index] = newModel
+                            recyclerView.adapter?.notifyItemChanged(index, newModel)
+                        }
+                    }
                 }
                 DialogOperation.DELETE -> {
-                    data.removeAt(index)
-                    recyclerView.adapter?.notifyItemChanged(index)
+                    model?.let {
+                        val index = data.indexOf(model)
+                        data.removeAt(index)
+                        recyclerView.adapter?.notifyItemRemoved(index)
+                    }
                 }
             }
         }
     }
 
+    /**
+     * Opens a Color Picker view that is housed in a Bottom Sheet.
+     * Contains a Gradient and Hue Slider with EditTexts for Various HSV and RGB values.
+     * onColorAdjust updates with the last adjusted HSV values for changes in value.
+     * onSubmit will confirm the HSV as the new Color.
+     */
     fun colorPickerBottomSheet(
-        context: Context,
-        lastHsv: Hsv?,
+        context: Context, lastHsv: Hsv?,
         /**
          * Lambda that provides the string of the current color.
          * Returns Nothing. Updates the Color in the viewmodel
@@ -149,7 +193,7 @@ object DialogUtils {
          * Lambda that provides the string of the current color.
          * Returns nothing. Used to confirm the use of the color.
          */
-        onSubmit: ((Hsv?) -> Unit)
+        onSubmit: (Hsv?) -> Unit
     ) {
         val sheet = BottomSheetDialog(context)
         val view = LayoutInflater.from(context).inflate(R.layout.color_dialog, null)
@@ -170,9 +214,7 @@ object DialogUtils {
             if (hueText.intValueOrNull != null && satText.intValueOrNull != null && valText.intValueOrNull != null) {
                 onSubmit.invoke(
                     Hsv(
-                        hueText.floatValue,
-                        satText.floatValue / 100,
-                        valText.floatValue / 100
+                        hueText.floatValue, satText.floatValue / 100, valText.floatValue / 100
                     )
                 )
                 sheet.dismiss()
@@ -218,9 +260,7 @@ object DialogUtils {
                 if (redText.intValueOrNull != null && greenText.intValueOrNull != null && blueText.intValueOrNull != null) {
                     val hsv = Hsv.toColor(
                         intArrayOf(
-                            redText.intValue,
-                            greenText.intValue,
-                            blueText.intValue
+                            redText.intValue, greenText.intValue, blueText.intValue
                         )
                     )
                     forceViewUpdates.invoke(hsv as Hsv)
@@ -287,23 +327,34 @@ object DialogUtils {
 /**
  * Function that will search for if the default hint is correct or needs to be changed.
  */
-private fun createLayerHint(context: Context, layerList: List<String>): String {
+private fun createLayerHint(context: Context, layerList: List<LayerViewModel>): String {
     var hintIndex = 1
     var currentHint = context.getString(R.string.layerHint, hintIndex)
-    while (layerList.contains(currentHint)) {
-        hintIndex += 1
-        currentHint = context.getString(R.string.layerHint, hintIndex)
+    var hintFound = false
+    while (!hintFound) {
+        for (i in layerList.indices) {
+            if (layerList[i].layerName == currentHint) {
+                hintIndex += 1
+                currentHint = context.getString(R.string.layerHint, hintIndex)
+                break
+            } else if (i == layerList.size - 1) {
+                hintFound = true
+                break
+            }
+        }
     }
     return currentHint
 }
 
 /**
- * Function that will return a Pair of a String and a Boolean.
- * If there is a match for the String in the list, or if the String is too long, it will return an error message and true.
- * If there is no errors, it will return an empty String and False.
+ * Function that will return a String.
+ * If there is a match for the String in the list, or if the String is too long, it will return the error.
+ * If there is no errors, it will return null.
  */
-private fun checkForErrors(context: Context, list: List<String>, newLayerName: String): String? {
-    return if (list.contains(newLayerName)) {
+private fun checkForErrors(
+    context: Context, list: List<LayerViewModel>, newLayerName: String
+): String? {
+    return if (list.contains(LayerViewModel(newLayerName))) {
         context.getString(R.string.layerNameInUse)
     } else if (newLayerName.length > CHAR_LIMIT) {
         context.getString(R.string.layerNameTooLong)
@@ -325,7 +376,3 @@ private fun clearAllFocus(list: List<ForcableEditText>) {
 object InputLimitations {
     const val CHAR_LIMIT = 16
 }
-
-/*
-Rework how we process view info by invoking a lambda
- */

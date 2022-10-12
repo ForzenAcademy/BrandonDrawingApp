@@ -12,6 +12,7 @@ class DrawActivity : AppCompatActivity() {
     private val dialogUtils = DialogUtils
     private var isAddDialogOpen = false
     private var isEditDialogOpen = false
+    private var isDeleteDialogOpen = false
     private var isLayerListViewSheetOpen = false
     private var isColorPickerSheetOpen = false
 
@@ -19,7 +20,8 @@ class DrawActivity : AppCompatActivity() {
      * Saves the status of the layerList dialog if the user happens to somehow close or leave it after hitting edit or delete.
      * This is done to return the values on what is being edited into the dialog so it reopens correctly.
      */
-    private var bottomSheetLambda: ((Int, String?, DialogOperation) -> Unit)? = null
+    private var onLayerListUpdate: ((LayerViewModel?, LayerViewModel?, DialogOperation) -> Unit)? =
+        null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,26 +32,26 @@ class DrawActivity : AppCompatActivity() {
         colorSelector.onChangeColor = { viewModel.cycleCurrentColor() }
 
         findViewById<Button>(R.id.addLayer).setOnClickListener {
-            viewModel.setDialogState()
+            viewModel.addOrEditClicked()
         }
 
         findViewById<Button>(R.id.viewLayers).setOnClickListener {
-            viewModel.setLayerListViewState()
+            viewModel.bottomSheetOpened()
         }
 
         findViewById<Button>(R.id.gradientButton).setOnClickListener {
-            viewModel.setColorPickerViewState()
+            viewModel.colorPickerOpened()
         }
 
         viewModel.apply {
-            onAddLayerComplete = {
+            onAddLayer = {
                 Toast.makeText(
                     this@DrawActivity,
                     this@DrawActivity.getString(R.string.addLayerSuccess, it),
                     Toast.LENGTH_SHORT
                 ).show()
             }
-            onDeleteOperationComplete = {
+            onDeleteLayer = {
                 if (it != null) {
                     Toast.makeText(
                         this@DrawActivity,
@@ -64,7 +66,7 @@ class DrawActivity : AppCompatActivity() {
                     ).show()
                 }
             }
-            onEditLayerComplete = { oldName, newName ->
+            onEditLayer = { oldName, newName ->
                 Toast.makeText(
                     this@DrawActivity,
                     this@DrawActivity.getString(R.string.editLayerSuccess, oldName, newName),
@@ -78,9 +80,9 @@ class DrawActivity : AppCompatActivity() {
             drawableArea.setPathColor(it.primaryColor)
             it.currentBitmap?.let { bitmap -> drawableArea.setBitmap(bitmap) }
             if (it.layerList.isEmpty()) {
-                viewModel.addLayer(this.getString(R.string.layerHint, 1))
+                viewModel.addLayer(LayerViewModel(this.getString(R.string.layerHint, 1)))
             }
-            if (!it.isLayerSheetOpen && it.isDialogOpen && !isAddDialogOpen) {
+            if (!it.isLayerListViewSheetOpen && it.isDialogOpen && !isAddDialogOpen) {
                 isAddDialogOpen = true
                 dialogUtils.showDialog(
                     context = this@DrawActivity,
@@ -88,89 +90,117 @@ class DrawActivity : AppCompatActivity() {
                     previousInput = it.currentNewLayerName,
                     onEditText = { layerName -> viewModel.setCurrentText(layerName) },
                     onSubmit = { layerName ->
+                        val model = LayerViewModel(layerName)
+                        viewModel.addLayer(model)
                         if (layerName != null) {
-                            viewModel.addLayer(layerName)
-                        } else viewModel.dialogCompleted()
-                    },
-                )
-            } else if (!it.isDialogOpen) {
-                isAddDialogOpen = false
-            }
-            if (it.isLayerSheetOpen && !isLayerListViewSheetOpen) {
-                isLayerListViewSheetOpen = true
-                viewModel.setLayerListViewState()
-                bottomSheetLambda = dialogUtils.layerListBottomSheet(context = this,
-                    layerList = it.layerList,
-                    onDialogComplete = { viewModel.dialogCompleted() },
-                    onDelete = { index ->
-                        viewModel.deleteLayer(index)
-                        if (!viewModel.isLayerListEmpty()) {
-                            bottomSheetLambda?.invoke(index, null, DialogOperation.DELETE)
+                            onLayerListUpdate?.invoke(
+                                null, null, DialogOperation.ADD
+                            )
                         }
                     },
-                    onEdit = { index ->
+                )
+            } else isAddDialogOpen = false
+            if (it.isLayerListViewSheetOpen && !isLayerListViewSheetOpen) {
+                isLayerListViewSheetOpen = true
+                onLayerListUpdate = dialogUtils.layerListBottomSheet(context = this,
+                    layerList = it.layerList,
+                    onSheetComplete = {
+                        isLayerListViewSheetOpen = false
+                        viewModel.bottomSheetDone()
+                    },
+                    onDelete = { model ->
+                        viewModel.setCurrentModel(model)
+                        viewModel.deleteClicked()
+                        isDeleteDialogOpen = true
+                        if (it.isDeleteDialogOpen) {
+                            dialogUtils.confirmationDialog(context = this@DrawActivity,
+                                title = this@DrawActivity.getString(R.string.deleteLayerDialogTitle),
+                                message = this@DrawActivity.getString(
+                                    R.string.deleteLayerDialogBody, model.layerName
+                                ),
+                                onSubmit = { isConfirmed ->
+                                    viewModel.setCurrentModel(model)
+                                    viewModel.deleteLayer(model, isConfirmed)
+                                    if (isConfirmed) {
+                                        onLayerListUpdate?.invoke(
+                                            model, null, DialogOperation.DELETE
+                                        )
+                                    }
+                                })
+                        }
+                    },
+                    onEdit = { model ->
                         isEditDialogOpen = true
-                        viewModel.setDialogState()
-                        viewModel.setEditIndex(index)
+                        viewModel.addOrEditClicked()
+                        viewModel.setCurrentModel(model)
                         dialogUtils.showDialog(
                             context = this,
                             layerList = it.layerList,
                             onEditText = { layerName -> viewModel.setCurrentText(layerName) },
                             previousInput = it.currentNewLayerName,
                             onSubmit = { newLayerName ->
+                                val newModel = LayerViewModel(newLayerName)
+                                viewModel.editLayer(newModel, model)
                                 if (newLayerName != null) {
-                                    viewModel.editLayer(
-                                        newLayerName, index ?: it.editLayerIndex
+                                    onLayerListUpdate?.invoke(
+                                        model, newModel, DialogOperation.EDIT
                                     )
-                                    if (index != null) {
-                                        bottomSheetLambda?.invoke(
-                                            index, newLayerName,
-                                            DialogOperation.EDIT
-                                        )
-                                    } else {
-                                        bottomSheetLambda?.invoke(
-                                            it.editLayerIndex, newLayerName, DialogOperation.EDIT
-                                        )
-                                    }
-                                } else viewModel.dialogCompleted()
+                                }
                             },
                         )
                     })
-                if (it.isDialogOpen && !isEditDialogOpen) {
-                    isEditDialogOpen = true
-                    dialogUtils.showDialog(
-                        context = this,
-                        layerList = it.layerList,
-                        onEditText = { layerName -> viewModel.setCurrentText(layerName) },
-                        previousInput = it.currentNewLayerName,
-                        onSubmit = { newLayerName ->
-                            if (newLayerName != null) {
-                                viewModel.editLayer(newLayerName, it.editLayerIndex)
-                                bottomSheetLambda?.invoke(
-                                    it.editLayerIndex, newLayerName,
-                                    DialogOperation.EDIT
-                                )
-                            } else viewModel.dialogCompleted()
-                        },
-                    )
-                } else if (!it.isDialogOpen) {
-                    isEditDialogOpen = false
-                }
-            } else if (!it.isLayerSheetOpen) {
-                isLayerListViewSheetOpen = false
             }
-            if (it.isColorPickerSheetOpen && !isColorPickerSheetOpen) {
-                isColorPickerSheetOpen = true
-                dialogUtils.colorPickerBottomSheet(
-                    context = this@DrawActivity,
-                    lastHsv = it.hsvArray,
-                    onColorAdjust = { hsv -> hsv?.let { viewModel.setCurrentColor(hsv) } },
-                    onSubmit = { hsv ->
-                        hsv?.let { viewModel.setCurrentColor(hsv) }
-                        viewModel.dialogCompleted()
-                        isColorPickerSheetOpen = false
-                    }
+            if (it.isDeleteDialogOpen && !isDeleteDialogOpen) {
+                isDeleteDialogOpen = true
+                dialogUtils.confirmationDialog(context = this@DrawActivity,
+                    title = this@DrawActivity.getString(R.string.deleteLayerDialogTitle),
+                    message = this@DrawActivity.getString(
+                        R.string.deleteLayerDialogBody, it.targetModel?.layerName
+                    ),
+                    onSubmit = { isConfirmed ->
+                        onLayerListUpdate?.invoke(
+                            it.targetModel, null, DialogOperation.DELETE
+                        )
+                        it.targetModel?.let { targetModel ->
+                            if (isConfirmed) {
+                                viewModel.deleteLayer(
+                                    targetModel, true
+                                )
+                            }
+                        }
+                    })
+            } else isDeleteDialogOpen = false
+            if (it.isLayerListViewSheetOpen && it.isDialogOpen && !isEditDialogOpen) {
+                isEditDialogOpen = true
+                dialogUtils.showDialog(
+                    context = this,
+                    layerList = it.layerList,
+                    onEditText = { layerName -> viewModel.setCurrentText(layerName) },
+                    previousInput = it.currentNewLayerName,
+                    onSubmit = { newName ->
+                        val newModel = LayerViewModel(newName)
+                        it.targetModel?.let { targetModel ->
+                            viewModel.editLayer(
+                                newModel, targetModel
+                            )
+                        }
+                        if (newName != null) {
+                            onLayerListUpdate?.invoke(
+                                it.targetModel, newModel, DialogOperation.EDIT
+                            )
+                        }
+                    },
                 )
+            } else isEditDialogOpen = false
+            if (it.isLayerListViewSheetOpen && it.isColorPickerSheetOpen && !isColorPickerSheetOpen) {
+                isColorPickerSheetOpen = true
+                dialogUtils.colorPickerBottomSheet(context = this@DrawActivity,
+                    lastHsv = it.hsvArray,
+                    onColorAdjust = { hsv -> hsv?.let { viewModel.setCurrentColor(hsv) } }) { hsv ->
+                    hsv?.let { viewModel.setCurrentColor(hsv) }
+                    viewModel.gradientCompleted()
+                    isColorPickerSheetOpen = false
+                }
             } else if (!it.isColorPickerSheetOpen) {
                 isColorPickerSheetOpen = false
             }

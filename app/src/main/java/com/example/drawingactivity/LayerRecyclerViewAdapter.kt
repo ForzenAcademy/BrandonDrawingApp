@@ -13,8 +13,8 @@ import com.example.drawingactivity.AdapterViewModel.Companion.LAYER
  */
 class RecyclerViewAdapter(
     private val data: List<AdapterViewModel>,
-    val onDeleteLayer: ((Int) -> Unit)?,
-    val onEditName: ((Int) -> Unit)?
+    val onDeleteLayer: ((LayerViewModel) -> Unit)?,
+    val onEditName: ((LayerViewModel) -> Unit)?
 ) : RecyclerView.Adapter<ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -32,7 +32,7 @@ class RecyclerViewAdapter(
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bind(data[position], position)
+        holder.bind(data[position])
     }
 
     override fun getItemCount(): Int = data.size
@@ -51,17 +51,19 @@ class LayerViewModel(
 ) : AdapterViewModel(LAYER)
 
 abstract class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-    abstract fun bind(model: AdapterViewModel, position: Int)
+    abstract fun bind(model: AdapterViewModel)
 }
 
 /**
  * This is a view that will display a name, a delete icon, and an edit icon.
- * Additionally, it will close any bottom sheet it is placed in when the icons are pressed
+ * Has a TextView, ImageView, and ImageView
+ * onDeleteLayer is called when the delete icon is pressed and pass the position of the view.
+ * onEditLayer is called when the edit icon is pressed and pass the position of the view.
  */
 class LayerViewHolder(
     view: View,
-    private val onDeleteLayer: ((Int) -> Unit)?,
-    private val onEditName: ((Int) -> Unit)?
+    private val onDeleteLayer: ((LayerViewModel) -> Unit)?,
+    private val onEditName: ((LayerViewModel) -> Unit)?
 ) : ViewHolder(view) {
     private val layerView: TextView
     private val deleteLayerView: ImageView
@@ -73,14 +75,14 @@ class LayerViewHolder(
         editLayerNameView = view.findViewById(R.id.editName)
     }
 
-    override fun bind(model: AdapterViewModel, position: Int) {
+    override fun bind(model: AdapterViewModel) {
         (model as LayerViewModel).apply {
             layerView.text = model.layerName
             deleteLayerView.setOnClickListener {
-                onDeleteLayer?.invoke(position)
+                onDeleteLayer?.invoke(model)
             }
             editLayerNameView.setOnClickListener {
-                onEditName?.invoke(position)
+                onEditName?.invoke(model)
             }
         }
     }
