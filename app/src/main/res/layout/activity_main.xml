@@ -32,16 +32,43 @@
 
     </LinearLayout>
 
-    <Button
-        android:id="@+id/addLayer"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/buttonAddLayerText" />
+        android:gravity="center"
+        android:orientation="horizontal">
 
-    <Button
-        android:id="@+id/viewLayers"
+        <Button
+            android:id="@+id/addLayer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/buttonAddLayerText" />
+
+        <Button
+            android:id="@+id/viewLayers"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/buttonViewLayersText" />
+
+    </LinearLayout>
+
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/buttonViewLayersText" />
+        android:gravity="center"
+        android:orientation="vertical">
 
+        <Button
+            android:id="@+id/grabImage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/buttonImageGrabber" />
+
+        <ImageView
+            android:id="@+id/placeImage"
+            android:layout_width="200dp"
+            android:layout_height="300dp"
+            />
+
+    </LinearLayout>
 </LinearLayout>

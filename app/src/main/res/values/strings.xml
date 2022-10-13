@@ -22,4 +22,6 @@
     <string name="letterRed">R:</string>
     <string name="letterBlue">B:</string>
     <string name="letterGreen">G:</string>
+    <string name="buttonImageGrabber">Image from Gallery</string>
+    <string name="errorImageGrabberFailure">Failed to get image.</string>
 </resources>
