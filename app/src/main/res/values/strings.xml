@@ -9,12 +9,16 @@
     <string name="addLayerFailure">Failed to Create Layer.</string>
     <string name="layerNameTooLong">Layer Name is too long!</string>
     <string name="layerNameInUse">Layer Name in use.</string>
-    <string name="addLayerPositiveButton">OK</string>
+    <string name="confirmationButtonTextOk">OK</string>
+    <string name="confirmationButtonTextConfirm">Confirm</string>
+    <string name="cancelButtonText">Cancel</string>
     <string name="addLayerNegativeButton">Cancel</string>
     <string name="editLayerDialogTitle">Edit Layer</string>
     <string name="buttonAddLayerText">Add Layer</string>
     <string name="buttonGradientText">Pick Color</string>
     <string name="buttonViewLayersText">View Layers</string>
+    <string name="deleteLayerDialogTitle">Delete Layer</string>
+    <string name="deleteLayerDialogBody">Are you sure you want to delete %1$s</string>
     <string name="buttonCloseLayerListViewText">Close</string>
     <string name="letterHue">H:</string>
     <string name="letterSaturation">S:</string>
