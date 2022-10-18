@@ -1,8 +1,11 @@
 package com.example.drawingactivity
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 
@@ -41,6 +44,21 @@ class DrawActivity : AppCompatActivity() {
 
         findViewById<Button>(R.id.gradientButton).setOnClickListener {
             viewModel.colorPickerOpened()
+        }
+
+        val imageView = findViewById<ImageView>(R.id.placeImage)
+        val imageContent = registerForActivityResult(ActivityResultContracts.GetContent()) { it ->
+            it?.let { uri ->
+                BitmapFromUri(context = this, url = uri, onComplete = {
+                    imageView.setImageBitmap(it)
+                }, onError = { imageView.setImageBitmap(it) })
+            }
+        }
+
+        findViewById<Button>(R.id.grabImage).setOnClickListener {
+            Intent(it.context, DrawActivity::class.java).apply {
+                imageContent.launch("image/*")
+            }
         }
 
         viewModel.apply {
