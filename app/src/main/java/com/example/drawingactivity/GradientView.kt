@@ -58,7 +58,7 @@ class GradientView @JvmOverloads constructor(
         } else {
             currentHue = hsv.hue
             dx = hsv.saturation * width
-            dy = hsv.value * height
+            dy = height - (hsv.value * height)
         }
         invalidate()
     }
@@ -86,7 +86,7 @@ class GradientView @JvmOverloads constructor(
                     )
                 }
             }
-            drawCircle(dx, height - dy, selectorCircleRadius, selectPaint)
+            drawCircle(dx, dy, selectorCircleRadius, selectPaint)
         }
     }
 

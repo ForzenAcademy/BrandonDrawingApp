@@ -6,6 +6,7 @@
     <dimen name="bottomSheetMarginTop">4dp</dimen>
     <dimen name="bottomSheetMarginBottom">8dp</dimen>
     <dimen name="bottomSheetButtonSize">36dp</dimen>
+    <dimen name="bottomSheetButtonSelectorSize">48dp</dimen>
     <dimen name="bottomSheetButtonMargin">24dp</dimen>
     <dimen name="bottomSheetPillWidth">48dp</dimen>
     <dimen name="bottomSheetPillHeight">6dp</dimen>

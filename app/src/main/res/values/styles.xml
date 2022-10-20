@@ -3,6 +3,7 @@
 
     <style name="DrawingTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
         <item name="myBackground">@color/arsenic</item>
+        <item name="selectedButtonBackground">@color/blackCustom</item>
         <item name="toolBarBackground">@color/white</item>
         <item name="iconFillColor">@color/black</item>
     </style>
