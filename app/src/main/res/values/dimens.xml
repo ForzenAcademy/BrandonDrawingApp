@@ -1,7 +1,15 @@
 <resources>
-    <dimen name="minorPadding">4dp</dimen>
-    <dimen name="mediumPadding">8dp</dimen>
     <dimen name="largePadding">16dp</dimen>
     <dimen name="errorText">11sp</dimen>
     <dimen name="largeText">16sp</dimen>
+
+    <dimen name="bottomSheetMarginTop">4dp</dimen>
+    <dimen name="bottomSheetMarginBottom">8dp</dimen>
+    <dimen name="bottomSheetButtonSize">36dp</dimen>
+    <dimen name="bottomSheetButtonMargin">24dp</dimen>
+    <dimen name="bottomSheetPillWidth">48dp</dimen>
+    <dimen name="bottomSheetPillHeight">6dp</dimen>
+    <dimen name="bottomSheetPillRounding">36dp</dimen>
+    <dimen name="bottomSheetPeekHeight">64dp</dimen>
+    <dimen name="bottomSheetCornerRounding">36dp</dimen>
 </resources>

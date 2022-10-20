@@ -3,12 +3,17 @@ package com.example.drawingactivity
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.Button
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.coordinatorlayout.widget.CoordinatorLayout
+import com.google.android.material.bottomsheet.BottomSheetBehavior
+
 
 class DrawActivity : AppCompatActivity() {
 
@@ -19,6 +24,7 @@ class DrawActivity : AppCompatActivity() {
     private var isDeleteDialogOpen = false
     private var isLayerListViewSheetOpen = false
     private var isColorPickerSheetOpen = false
+    lateinit var behavior: BottomSheetBehavior<LinearLayout>
 
     /**
      * Saves the status of the layerList dialog if the user happens to somehow close or leave it after hitting edit or delete.
@@ -32,8 +38,21 @@ class DrawActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         val drawableArea = findViewById<DrawableAreaView>(R.id.drawableArea)
         drawableArea.onBitmapDrawn = { bitmap -> viewModel.setCurrentBitmapState(bitmap) }
-        val colorSelector = findViewById<PrimaryColorCircleView>(R.id.colorCircle)
+        val colorSelector = findViewById<CurrentColorView>(R.id.colorCircle)
         colorSelector.onChangeColor = { viewModel.cycleCurrentColor() }
+        val coordinator = findViewById<CoordinatorLayout>(R.id.coordinator)
+        val bottomSheet = coordinator.findViewById<LinearLayout>(R.id.toolLayout)
+        behavior = BottomSheetBehavior.from(bottomSheet)
+        listOf<View>(
+            bottomSheet.findViewById<CurrentColorView>(R.id.pickerButton),
+            bottomSheet.findViewById<ImageView>(R.id.brushButton),
+            bottomSheet.findViewById<ImageView>(R.id.moveButton),
+            bottomSheet.findViewById<ImageView>(R.id.resizeButton),
+            bottomSheet.findViewById<ImageView>(R.id.filterButton),
+            bottomSheet.findViewById<ImageView>(R.id.layerButton),
+        ).forEach {
+            it.setOnClickListener { behavior.state = BottomSheetBehavior.STATE_EXPANDED }
+        }
 
         findViewById<Button>(R.id.addLayer).setOnClickListener {
             viewModel.addOrEditClicked()
@@ -54,7 +73,9 @@ class DrawActivity : AppCompatActivity() {
                     imageView.setImageBitmap(it)
                 }, onError = {
                     imageView.setImageBitmap(it)
-                    Log.v("Error in Getting Bitmap Image from uri!", "Placing Error Bitmap Instead.")
+                    Log.v(
+                        "Error in Getting Bitmap Image from uri!", "Placing Error Bitmap Instead."
+                    )
                 })
             }
         }
