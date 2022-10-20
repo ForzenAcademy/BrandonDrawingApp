@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="DrawingTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="myBackground">@color/arsenic</item>
+        <item name="android:background">?attr/myBackground</item>
+    </style>
+
+</resources>
