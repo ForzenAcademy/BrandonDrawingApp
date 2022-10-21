@@ -4,8 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
-import android.graphics.Color.BLACK
-import android.graphics.Color.LTGRAY
+import android.graphics.Color.*
 import android.graphics.Paint
 import android.graphics.Path
 import android.util.AttributeSet
@@ -59,7 +58,7 @@ class DrawableAreaView @JvmOverloads constructor(
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
         canvas?.apply {
-            drawColor(LTGRAY)
+            drawColor(WHITE)
             if (userDrawnBitmap == null) {
                 userDrawnBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
             }

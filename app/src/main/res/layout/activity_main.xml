@@ -4,6 +4,7 @@
     android:layout_height="match_parent"
     android:gravity="center"
     android:orientation="vertical"
+    style="@style/DrawingTheme"
     tools:context=".DrawActivity">
 
     <com.example.drawingactivity.DrawableAreaView
