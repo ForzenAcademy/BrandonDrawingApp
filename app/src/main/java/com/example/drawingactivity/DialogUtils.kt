@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
@@ -182,11 +183,13 @@ object DialogUtils {
      * onColorAdjust updates with the last adjusted HSV values for changes in value.
      * onSubmit will confirm the HSV as the new Color.
      */
-    fun colorPickerBottomSheet(
-        context: Context, lastHsv: Hsv?,
+    fun colorPickerCalculations(
+        bottomSheet: LinearLayout,
+        behavior: BottomSheetBehavior<LinearLayout>,
+        lastHsv: Hsv?,
         /**
          * Lambda that provides the string of the current color.
-         * Returns Nothing. Updates the Color in the viewmodel
+         * Returns Nothing. Updates the Color in the viewModel
          */
         onColorAdjust: ((Hsv?) -> Unit),
         /**
@@ -195,20 +198,19 @@ object DialogUtils {
          */
         onSubmit: (Hsv?) -> Unit
     ) {
-        val sheet = BottomSheetDialog(context)
-        val view = LayoutInflater.from(context).inflate(R.layout.color_dialog, null)
-        val huePicker = view.findViewById<HueView>(R.id.huePicker)
-        val gradientPicker = view.findViewById<GradientView>(R.id.gradientPicker)
-        val hexText = view.findViewById<ForcableEditText>(R.id.hexText)
-        val hueText = view.findViewById<ForcableEditText>(R.id.hueText)
-        val satText = view.findViewById<ForcableEditText>(R.id.satText)
-        val valText = view.findViewById<ForcableEditText>(R.id.valText)
-        val redText = view.findViewById<ForcableEditText>(R.id.redText)
-        val greenText = view.findViewById<ForcableEditText>(R.id.greenText)
-        val blueText = view.findViewById<ForcableEditText>(R.id.blueText)
-        val topColorSquare = view.findViewById<View>(R.id.topColor)
-        val bottomColorSquare = view.findViewById<View>(R.id.bottomColor)
-        val confirmButton = view.findViewById<Button>(R.id.okButton)
+        val picker = bottomSheet.findViewById<LinearLayout>(R.id.colorPicker)
+        val huePicker = picker.findViewById<HueView>(R.id.huePicker)
+        val gradientPicker = picker.findViewById<GradientView>(R.id.gradientPicker)
+        val hexText = picker.findViewById<ForcableEditText>(R.id.hexText)
+        val hueText = picker.findViewById<ForcableEditText>(R.id.hueText)
+        val satText = picker.findViewById<ForcableEditText>(R.id.satText)
+        val valText = picker.findViewById<ForcableEditText>(R.id.valText)
+        val redText = picker.findViewById<ForcableEditText>(R.id.redText)
+        val greenText = picker.findViewById<ForcableEditText>(R.id.greenText)
+        val blueText = picker.findViewById<ForcableEditText>(R.id.blueText)
+        val topColorSquare = picker.findViewById<View>(R.id.topColor)
+        val bottomColorSquare = picker.findViewById<View>(R.id.bottomColor)
+        val confirmButton = picker.findViewById<Button>(R.id.okButton)
         val allText = listOf(hexText, hueText, satText, valText, redText, greenText, blueText)
         confirmButton.setOnClickListener {
             if (hueText.intValueOrNull != null && satText.intValueOrNull != null && valText.intValueOrNull != null) {
@@ -217,17 +219,12 @@ object DialogUtils {
                         hueText.floatValue, satText.floatValue / 100, valText.floatValue / 100
                     )
                 )
-                sheet.dismiss()
             }
         }
-        val cancelButton = view.findViewById<Button>(R.id.cancelButton)
+        val cancelButton = bottomSheet.findViewById<Button>(R.id.cancelButton)
         cancelButton.setOnClickListener {
             onSubmit.invoke(null)
-            sheet.dismiss()
-        }
-        sheet.setOnCancelListener {
-            onSubmit.invoke(null)
-            sheet.dismiss()
+            behavior.state = BottomSheetBehavior.STATE_COLLAPSED
         }
         /**
          * Lambda that updates all the views in the gradient.
@@ -236,6 +233,8 @@ object DialogUtils {
         val forceViewUpdates: ((Hsv) -> Unit) = { hsv ->
             val rgb = Hsv.toColor(hsv)
             val hex = calculateHex(rgb as IntArray)
+            huePicker.setHue(hsv.hue)
+            gradientPicker.setCurrentHsv(hsv)
             hexText.forceText(hex)
             hueText.forceText(hsv.hue.toInt().toString())
             satText.forceText((hsv.saturation * 100).toInt().toString())
@@ -243,9 +242,6 @@ object DialogUtils {
             redText.forceText(rgb[0].toString())
             greenText.forceText(rgb[1].toString())
             blueText.forceText(rgb[2].toString())
-            huePicker.setHue(hsv.hue)
-            gradientPicker.setHue(hsv.hue)
-            gradientPicker.setSaturationAndValue(hsv.saturation, hsv.value)
             topColorSquare.setBackgroundColor(parseColor(hex))
         }
         if (lastHsv != null) {
@@ -253,7 +249,6 @@ object DialogUtils {
             val hex = calculateHex(rgb as IntArray)
             bottomColorSquare.setBackgroundColor(parseColor(hex))
             forceViewUpdates.invoke(lastHsv)
-            gradientPicker.setPicker(lastHsv.saturation, lastHsv.value)
         }
         listOf(redText, greenText, blueText).forEach {
             it.addTextChangedListener {
@@ -287,7 +282,7 @@ object DialogUtils {
                     onColorAdjust.invoke(hsv)
                 }
                 onSliderClicked = { viewClicked ->
-                    sheet.behavior.isDraggable = !viewClicked
+                    behavior.isDraggable = !viewClicked
                 }
             }
         }
@@ -301,7 +296,7 @@ object DialogUtils {
                 }
             }
             onGradientClicked = { viewClicked ->
-                sheet.behavior.isDraggable = !viewClicked
+                behavior.isDraggable = !viewClicked
             }
         }
         hexText.addTextChangedListener {
@@ -316,10 +311,6 @@ object DialogUtils {
                 onColorAdjust.invoke(hsv)
             }
         }
-        sheet.setContentView(view)
-        val behavior = BottomSheetBehavior.from(view.parent as View)
-        behavior.state = BottomSheetBehavior.STATE_EXPANDED
-        sheet.show()
     }
 }
 

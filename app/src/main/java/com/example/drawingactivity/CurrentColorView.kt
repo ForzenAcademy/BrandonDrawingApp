@@ -23,22 +23,6 @@ class CurrentColorView @JvmOverloads constructor(
     defStyle: Int = 0
 ) : View(context, attrs, defStyle) {
 
-    /**
-     * This lambda calls for an update to the color
-     */
-    var onChangeColor: (() -> Unit)? = null
-    var circlePrimaryColor = Color.RED
-
-    private var circlePaint = Paint().apply {
-        color = circlePrimaryColor
-        style = Paint.Style.FILL
-    }
-
-    private val borderPaint = Paint().apply {
-        color = Color.BLACK
-        style = Paint.Style.STROKE
-        strokeWidth = 8f
-    }
 
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
@@ -49,14 +33,22 @@ class CurrentColorView @JvmOverloads constructor(
         }
     }
 
-    init {
-        setOnClickListener {
-            onChangeColor?.invoke()
-            invalidate()
-        }
+    fun setCircleColor(color: Int) {
+        circlePrimaryColor = color
+        invalidate()
     }
 
     companion object CircleMeasurements {
         const val RADIUS = 36f
+        private var circlePrimaryColor = Color.RED
+        private var circlePaint = Paint().apply {
+            color = circlePrimaryColor
+            style = Paint.Style.FILL
+        }
+        private val borderPaint = Paint().apply {
+            color = Color.BLACK
+            style = Paint.Style.STROKE
+            strokeWidth = 8f
+        }
     }
 }

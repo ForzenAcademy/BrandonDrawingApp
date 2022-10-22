@@ -22,32 +22,29 @@ class GradientView @JvmOverloads constructor(
     var onGradientClicked: ((Boolean) -> Unit)? = null
     private var currentHue = hueMax
     private var shape: Rect? = null
+    private var lastHsv: Hsv? = null
     private var dx = 0f
     private var dy = 0f
 
     init {
         setOnTouchListener { _, mEvent ->
+            dx = mEvent.x.coerceIn(0f, width * 1f)
+            dy = mEvent.y.coerceIn(0f, height * 1f)
             when (mEvent.action) {
                 MotionEvent.ACTION_DOWN -> {
                     onGradientClicked?.invoke(true)
-                    dx = mEvent.x.coerceIn(0f, width * 1f)
-                    dy = mEvent.y.coerceIn(0f, height * 1f)
                     if (dy > height / 2) {
                         selectPaint.color = Color.WHITE
                     } else selectPaint.color = BLACK
                     onSatValChanged?.invoke(dx / width, 1 - (dy / height))
-                    invalidate()
                 }
-                MotionEvent.ACTION_MOVE, MotionEvent.ACTION_CANCEL -> {
-                    dx = mEvent.x.coerceIn(0f, width * 1f)
-                    dy = mEvent.y.coerceIn(0f, height * 1f)
+                MotionEvent.ACTION_MOVE -> {
                     if (dy > height / 2) {
                         selectPaint.color = Color.WHITE
                     } else selectPaint.color = BLACK
                     onSatValChanged?.invoke(dx / width, 1 - (dy / height))
-                    invalidate()
                 }
-                MotionEvent.ACTION_UP -> {
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                     onGradientClicked?.invoke(false)
                 }
             }
@@ -55,25 +52,25 @@ class GradientView @JvmOverloads constructor(
         }
     }
 
-    fun setHue(huePickerValue: Float) {
-        currentHue = huePickerValue
-        invalidate()
-    }
-
-    fun setPicker(x: Float, y: Float) {
-        dx = x * width
-        dy = y * height
-        invalidate()
-    }
-
-    fun setSaturationAndValue(saturation: Float, value: Float) {
-        dx = saturation * width
-        dy = value * height
+    fun setCurrentHsv(hsv: Hsv) {
+        if (width == 0 || height == 0) {
+            lastHsv = hsv
+        } else {
+            currentHue = hsv.hue
+            dx = hsv.saturation * width
+            dy = hsv.value * height
+        }
         invalidate()
     }
 
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
+        lastHsv.let { hsv ->
+            if (hsv != null) {
+                setCurrentHsv(hsv)
+                lastHsv = null
+            }
+        }
         canvas?.apply {
             if (shape == null) {
                 shape = Rect(0, 0, width, height)

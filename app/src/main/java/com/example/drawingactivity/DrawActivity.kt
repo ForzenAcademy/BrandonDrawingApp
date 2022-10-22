@@ -23,7 +23,6 @@ class DrawActivity : AppCompatActivity() {
     private var isEditDialogOpen = false
     private var isDeleteDialogOpen = false
     private var isLayerListViewSheetOpen = false
-    private var isColorPickerSheetOpen = false
     lateinit var behavior: BottomSheetBehavior<LinearLayout>
 
     /**
@@ -38,10 +37,10 @@ class DrawActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         val drawableArea = findViewById<DrawableAreaView>(R.id.drawableArea)
         drawableArea.onBitmapDrawn = { bitmap -> viewModel.setCurrentBitmapState(bitmap) }
-        val colorSelector = findViewById<CurrentColorView>(R.id.colorCircle)
-        colorSelector.onChangeColor = { viewModel.cycleCurrentColor() }
         val coordinator = findViewById<CoordinatorLayout>(R.id.coordinator)
         val bottomSheet = coordinator.findViewById<LinearLayout>(R.id.toolLayout)
+        val currentColorSelection = bottomSheet.findViewById<CurrentColorView>(R.id.pickerButton)
+        val previousColorSelection = bottomSheet.findViewById<View>(R.id.bottomColor)
         behavior = BottomSheetBehavior.from(bottomSheet)
         listOf<View>(
             bottomSheet.findViewById<CurrentColorView>(R.id.pickerButton),
@@ -54,16 +53,36 @@ class DrawActivity : AppCompatActivity() {
             it.setOnClickListener { behavior.state = BottomSheetBehavior.STATE_EXPANDED }
         }
 
+        dialogUtils.colorPickerCalculations(bottomSheet = bottomSheet,
+            behavior = behavior,
+            lastHsv = Hsv(),
+            onColorAdjust = { hsv -> hsv?.let { viewModel.userUpdatesColor(hsv) } },
+            onSubmit = { hsv ->
+                hsv?.let {
+                    viewModel.userUpdatesColor(hsv)
+                    viewModel.userConfirmsColor()
+                }
+            })
+
+        currentColorSelection.setOnClickListener {
+            dialogUtils.colorPickerCalculations(bottomSheet = bottomSheet,
+                behavior = behavior,
+                lastHsv = Hsv(),
+                onColorAdjust = { hsv -> hsv?.let { viewModel.userUpdatesColor(hsv) } },
+                onSubmit = { hsv ->
+                    hsv?.let {
+                        viewModel.userUpdatesColor(hsv)
+                        viewModel.userConfirmsColor()
+                    }
+                })
+        }
+
         findViewById<Button>(R.id.addLayer).setOnClickListener {
             viewModel.addOrEditClicked()
         }
 
         findViewById<Button>(R.id.viewLayers).setOnClickListener {
             viewModel.bottomSheetOpened()
-        }
-
-        findViewById<Button>(R.id.gradientButton).setOnClickListener {
-            viewModel.colorPickerOpened()
         }
 
         val imageView = findViewById<ImageView>(R.id.placeImage)
@@ -116,11 +135,16 @@ class DrawActivity : AppCompatActivity() {
                     Toast.LENGTH_SHORT
                 ).show()
             }
+            onConfirmColor = {
+                if (it != null) {
+                    currentColorSelection.setCircleColor(it)
+                    drawableArea.setPathColor(it)
+                    previousColorSelection.setBackgroundColor(it)
+                }
+            }
         }
 
         viewModel.onUpdate = {
-            colorSelector.circlePrimaryColor = it.primaryColor
-            drawableArea.setPathColor(it.primaryColor)
             it.currentBitmap?.let { bitmap -> drawableArea.setBitmap(bitmap) }
             if (it.layerList.isEmpty()) {
                 viewModel.addLayer(LayerViewModel(this.getString(R.string.layerHint, 1)))
@@ -235,18 +259,6 @@ class DrawActivity : AppCompatActivity() {
                     },
                 )
             } else isEditDialogOpen = false
-            if (it.isLayerListViewSheetOpen && it.isColorPickerSheetOpen && !isColorPickerSheetOpen) {
-                isColorPickerSheetOpen = true
-                dialogUtils.colorPickerBottomSheet(context = this@DrawActivity,
-                    lastHsv = it.hsvArray,
-                    onColorAdjust = { hsv -> hsv?.let { viewModel.setCurrentColor(hsv) } }) { hsv ->
-                    hsv?.let { viewModel.setCurrentColor(hsv) }
-                    viewModel.gradientCompleted()
-                    isColorPickerSheetOpen = false
-                }
-            } else if (!it.isColorPickerSheetOpen) {
-                isColorPickerSheetOpen = false
-            }
         }
     }
 }

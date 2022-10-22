@@ -21,7 +21,7 @@ class HueView @JvmOverloads constructor(
     var onHueChanged: ((Float) -> Unit)? = null
     var onSliderClicked: ((Boolean) -> Unit)? = null
     private var hueSlider = hueMax
-    private var currentHue = 0f
+    private var currentHue: Float? = null
     private var sliderBitmap: Bitmap? = null
     private var dy = hueSlider
 
@@ -31,13 +31,11 @@ class HueView @JvmOverloads constructor(
             when (mEvent.action) {
                 MotionEvent.ACTION_DOWN -> {
                     onSliderClicked?.invoke(true)
-                    setHue(dy)
-                    onHueChanged?.invoke(currentHue)
+                    onHueChanged?.invoke(dy)
                     invalidate()
                 }
                 MotionEvent.ACTION_MOVE -> {
-                    setHue(dy)
-                    onHueChanged?.invoke(currentHue)
+                    onHueChanged?.invoke(dy)
                     invalidate()
                 }
                 MotionEvent.ACTION_UP -> {
@@ -50,6 +48,12 @@ class HueView @JvmOverloads constructor(
 
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
+        currentHue.let { hue ->
+            if (hue != null) {
+                setHue(hue)
+                currentHue = null
+            }
+        }
         canvas?.apply {
             if (sliderBitmap == null) {
                 sliderBitmap = makeBitmap()
@@ -60,8 +64,11 @@ class HueView @JvmOverloads constructor(
     }
 
     fun setHue(newHue: Float) {
-        currentHue = newHue
-        dy = newHue.coerceIn(0f, hueMax)
+        if (width == 0 || height == 0) {
+            currentHue = newHue
+        } else {
+            dy = newHue
+        }
         invalidate()
     }
 

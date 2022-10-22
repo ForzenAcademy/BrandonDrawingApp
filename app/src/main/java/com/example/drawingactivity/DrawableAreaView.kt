@@ -72,11 +72,11 @@ class DrawableAreaView @JvmOverloads constructor(
     }
 
     companion object {
-        const val STROKEWIDTH = 15f
+        private const val StrokeWidth = 15f
         var pathPaint = Paint().apply {
-            color = BLACK
+            color = RED
             style = Paint.Style.STROKE
-            strokeWidth = STROKEWIDTH
+            strokeWidth = StrokeWidth
             strokeJoin = Paint.Join.ROUND
             strokeCap = Paint.Cap.ROUND
         }
