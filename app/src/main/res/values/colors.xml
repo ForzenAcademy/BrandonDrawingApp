@@ -2,4 +2,6 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="arsenic">#424242</color>
+    <color name="raisinBlack">#222222</color>
+    <color name="bottomSheetPillColor">#747474</color>
 </resources>

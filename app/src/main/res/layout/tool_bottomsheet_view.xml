@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/toolLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/tool_sheet_shape"
+    android:gravity="top"
+    android:orientation="vertical"
+    app:behavior_draggable="true"
+    app:behavior_hideable="false"
+    app:behavior_peekHeight="@dimen/bottomSheetPeekHeight"
+    app:layout_behavior="@string/bottom_sheet_behavior">
+
+    <ImageView
+        android:id="@+id/grabber"
+        android:layout_width="@dimen/bottomSheetPillWidth"
+        android:layout_height="@dimen/bottomSheetPillHeight"
+        android:layout_gravity="center"
+        android:layout_margin="@dimen/bottomSheetMarginBottom"
+        android:background="@drawable/grabber"
+        android:padding="@dimen/bottomSheetMarginBottom" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <com.example.drawingactivity.CurrentColorView
+            android:id="@+id/pickerButton"
+            android:layout_width="@dimen/bottomSheetButtonSize"
+            android:layout_height="@dimen/bottomSheetButtonSize"
+            android:layout_marginStart="@dimen/bottomSheetButtonMargin"
+            android:layout_marginTop="@dimen/bottomSheetMarginTop"
+            android:layout_marginEnd="@dimen/bottomSheetButtonMargin"
+            android:layout_marginBottom="@dimen/bottomSheetMarginBottom" />
+
+        <ImageView
+            android:id="@+id/brushButton"
+            android:layout_width="@dimen/bottomSheetButtonSize"
+            android:layout_height="@dimen/bottomSheetButtonSize"
+            android:layout_marginTop="@dimen/bottomSheetMarginTop"
+            android:layout_marginEnd="@dimen/bottomSheetButtonMargin"
+            android:layout_marginBottom="@dimen/bottomSheetMarginBottom"
+            android:src="@drawable/ic_brush" />
+
+        <ImageView
+            android:id="@+id/moveButton"
+            android:layout_width="@dimen/bottomSheetButtonSize"
+            android:layout_height="@dimen/bottomSheetButtonSize"
+            android:layout_marginTop="@dimen/bottomSheetMarginTop"
+            android:layout_marginEnd="@dimen/bottomSheetButtonMargin"
+            android:layout_marginBottom="@dimen/bottomSheetMarginBottom"
+            android:background="@drawable/ic_move" />
+
+        <ImageView
+            android:id="@+id/resizeButton"
+            android:layout_width="@dimen/bottomSheetButtonSize"
+            android:layout_height="@dimen/bottomSheetButtonSize"
+            android:layout_marginTop="@dimen/bottomSheetMarginTop"
+            android:layout_marginEnd="@dimen/bottomSheetButtonMargin"
+            android:layout_marginBottom="@dimen/bottomSheetMarginBottom"
+            android:src="@drawable/ic_resize" />
+
+        <ImageView
+            android:id="@+id/filterButton"
+            android:layout_width="@dimen/bottomSheetButtonSize"
+            android:layout_height="@dimen/bottomSheetButtonSize"
+            android:layout_marginTop="@dimen/bottomSheetMarginTop"
+            android:layout_marginEnd="@dimen/bottomSheetButtonMargin"
+            android:layout_marginBottom="@dimen/bottomSheetMarginBottom"
+            android:src="@drawable/ic_filters" />
+
+        <ImageView
+            android:id="@+id/layerButton"
+            android:layout_width="@dimen/bottomSheetButtonSize"
+            android:layout_height="@dimen/bottomSheetButtonSize"
+            android:layout_marginTop="@dimen/bottomSheetMarginTop"
+            android:layout_marginEnd="@dimen/bottomSheetButtonMargin"
+            android:layout_marginBottom="@dimen/bottomSheetMarginBottom"
+            android:src="@drawable/ic_layers" />
+    </LinearLayout>
+
+    <include
+        android:id="@+id/colorPicker"
+        layout="@layout/color_dialog"
+        android:visibility="visible" />
+
+</LinearLayout>

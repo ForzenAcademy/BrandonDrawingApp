@@ -1,75 +1,106 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    style="?attr/myBackground"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:gravity="center"
     android:orientation="vertical"
-    style="@style/DrawingTheme"
     tools:context=".DrawActivity">
 
-    <com.example.drawingactivity.DrawableAreaView
-        android:id="@+id/drawableArea"
-        android:layout_width="200dp"
-        android:layout_height="200dp"
-        android:padding="@dimen/largePadding" />
-
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center"
-        android:orientation="horizontal">
-
-        <com.example.drawingactivity.PrimaryColorCircleView
-            android:id="@+id/colorCircle"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:padding="@dimen/mediumPadding" />
-
-        <Button
-            android:id="@+id/gradientButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/buttonGradientText" />
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:orientation="horizontal">
-
-        <Button
-            android:id="@+id/addLayer"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/buttonAddLayerText" />
-
-        <Button
-            android:id="@+id/viewLayers"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/buttonViewLayersText" />
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_gravity="center"
         android:gravity="center"
         android:orientation="vertical">
 
-        <Button
-            android:id="@+id/grabImage"
+        <com.example.drawingactivity.DrawableAreaView
+            android:id="@+id/drawableArea"
+            android:layout_width="300dp"
+            android:layout_height="300dp"
+            android:padding="@dimen/largePadding" />
+
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/buttonImageGrabber" />
+            android:gravity="center"
+            android:orientation="horizontal">
 
-        <ImageView
-            android:id="@+id/placeImage"
-            android:layout_width="200dp"
-            android:layout_height="300dp"
-            />
+            <com.example.drawingactivity.CurrentColorView
+                android:id="@+id/colorCircle"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:padding="@dimen/bottomSheetMarginBottom" />
+
+            <Button
+                android:id="@+id/gradientButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/buttonGradientText" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/addLayer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/buttonAddLayerText" />
+
+            <Button
+                android:id="@+id/viewLayers"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/buttonViewLayersText" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <Button
+                android:id="@+id/grabImage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/buttonImageGrabber" />
+
+            <ImageView
+                android:id="@+id/placeImage"
+                android:layout_width="50dp"
+                android:layout_height="100dp" />
+
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:weightSum="1">
+
+        <View
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.8" />
+
+        <androidx.coordinatorlayout.widget.CoordinatorLayout
+            android:id="@+id/coordinator"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="bottom"
+            android:layout_weight="0.2">
+
+            <include layout="@layout/tool_bottomsheet_view" />
+        </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
     </LinearLayout>
-</LinearLayout>
+</FrameLayout>

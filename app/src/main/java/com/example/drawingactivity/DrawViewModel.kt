@@ -13,7 +13,7 @@ import androidx.lifecycle.ViewModel
 class DrawViewModel : ViewModel() {
 
     private var primaryColors = listOf(Color.BLACK, Color.RED, Color.GREEN, Color.BLUE)
-    private var primaryColor = primaryColors[0]
+    private var primaryColor = primaryColors[1]
     private var currentColor: Int = 0
     private var currentBitmap: Bitmap? = null
     private var layerList = mutableListOf<LayerViewModel>()

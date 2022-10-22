@@ -17,7 +17,7 @@ import android.view.View
  * circlePrimaryColor is how the color of the circle is adjusted
  */
 @SuppressLint("ClickableViewAccessibility")
-class PrimaryColorCircleView @JvmOverloads constructor(
+class CurrentColorView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyle: Int = 0
@@ -27,11 +27,17 @@ class PrimaryColorCircleView @JvmOverloads constructor(
      * This lambda calls for an update to the color
      */
     var onChangeColor: (() -> Unit)? = null
-    var circlePrimaryColor = Color.BLACK
+    var circlePrimaryColor = Color.RED
 
     private var circlePaint = Paint().apply {
         color = circlePrimaryColor
         style = Paint.Style.FILL
+    }
+
+    private val borderPaint = Paint().apply {
+        color = Color.BLACK
+        style = Paint.Style.STROKE
+        strokeWidth = 8f
     }
 
     override fun onDraw(canvas: Canvas?) {
@@ -39,6 +45,7 @@ class PrimaryColorCircleView @JvmOverloads constructor(
         canvas?.apply {
             circlePaint.color = circlePrimaryColor
             drawCircle(width / 2f, height / 2f, RADIUS, circlePaint)
+            drawCircle(width / 2f, height / 2f, RADIUS, borderPaint)
         }
     }
 
@@ -50,6 +57,6 @@ class PrimaryColorCircleView @JvmOverloads constructor(
     }
 
     companion object CircleMeasurements {
-        const val RADIUS = 50f
+        const val RADIUS = 36f
     }
 }

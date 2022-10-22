@@ -2,4 +2,6 @@
 <resources>
     <!-- Colors  -->
     <attr name="myBackground" format="color"/>
+    <attr name="toolBarBackground" format="color"/>
+    <attr name="iconFillColor" format="color"/>
 </resources>
