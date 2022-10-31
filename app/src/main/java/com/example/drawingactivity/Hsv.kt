@@ -7,10 +7,12 @@ import android.graphics.Color
  * Contains: Hue, Saturation, and Value.
  */
 data class Hsv(
-    var hue: Float,
-    var saturation: Float,
-    var value: Float
+    var hue: Float = 0f, var saturation: Float = 1f, var value: Float = 1f
 ) {
+
+    fun toColorInt(): Int {
+        return Color.HSVToColor(floatArrayOf(this.hue, this.saturation, this.value))
+    }
 
     companion object {
         /**
@@ -18,10 +20,7 @@ data class Hsv(
          */
         fun calculateHex(rgb: IntArray): String {
             return String.format(
-                "#%02x%02x%02x",
-                rgb[0],
-                rgb[1],
-                rgb[2]
+                "#%02x%02x%02x", rgb[0], rgb[1], rgb[2]
             )
         }
 
@@ -49,9 +48,7 @@ data class Hsv(
                     val currentColor = Color.rgb(colorData[0], colorData[1], colorData[2])
                     Color.colorToHSV(currentColor, hsv)
                     return Hsv(
-                        hue = hsv[0],
-                        saturation = hsv[1],
-                        value = hsv[2]
+                        hue = hsv[0], saturation = hsv[1], value = hsv[2]
                     )
                 }
                 else -> {

@@ -1,7 +1,6 @@
 package com.example.drawingactivity
 
 import android.graphics.Bitmap
-import android.graphics.Color
 import androidx.lifecycle.ViewModel
 
 /**
@@ -12,9 +11,6 @@ import androidx.lifecycle.ViewModel
  */
 class DrawViewModel : ViewModel() {
 
-    private var primaryColors = listOf(Color.BLACK, Color.RED, Color.GREEN, Color.BLUE)
-    private var primaryColor = primaryColors[1]
-    private var currentColor: Int = 0
     private var currentBitmap: Bitmap? = null
     private var layerList = mutableListOf<LayerViewModel>()
     private var currentLayerName: String? = null
@@ -22,8 +18,7 @@ class DrawViewModel : ViewModel() {
     private var isAddOrEditDialogOpen = false
     private var isDeleteDialogOpen = false
     private var isBottomSheetOpen = false
-    private var isColorPickerOpen = false
-    private var previousHSVColor: Hsv = Hsv(0f, 0f, 0f)
+    private var previousHSVColor: Hsv = Hsv(0f, 1f, 1f)
 
     /**
      * Invoked when a view requests an update from the viewModel.
@@ -50,8 +45,13 @@ class DrawViewModel : ViewModel() {
      */
     var onDeleteLayer: ((String?) -> Unit)? = null
 
+    /**
+     * Invoked when a String is removed from the List.
+     * Confirms that the delete was a success.
+     */
+    var onConfirmColor: ((Int?) -> Unit)? = null
+
     data class ViewState(
-        val primaryColor: Int,
         val currentBitmap: Bitmap?,
         val layerList: MutableList<LayerViewModel>,
         val currentNewLayerName: String?,
@@ -59,20 +59,8 @@ class DrawViewModel : ViewModel() {
         val isDialogOpen: Boolean,
         val isDeleteDialogOpen: Boolean,
         val isLayerListViewSheetOpen: Boolean,
-        val isColorPickerSheetOpen: Boolean,
         val hsvArray: Hsv
     )
-
-    /**
-     * Changes the primary color used to paint to a view.
-     */
-    fun cycleCurrentColor() {
-        if (currentColor < primaryColors.size - 1) {
-            currentColor += 1
-        } else currentColor = 0
-        this.primaryColor = primaryColors[currentColor]
-        updateViewStates()
-    }
 
     /**
      * Updates the viewModel with the bitmap provided.
@@ -110,14 +98,6 @@ class DrawViewModel : ViewModel() {
     }
 
     /**
-     * Alerts viewModel that the color picker has been opened.
-     */
-    fun colorPickerOpened() {
-        isColorPickerOpen = true
-        updateViewStates()
-    }
-
-    /**
      * Updates the viewModel with the string being input by the user
      */
     fun setCurrentText(text: String?) {
@@ -134,8 +114,15 @@ class DrawViewModel : ViewModel() {
     /**
      * Updates the viewModel with the current color of the color picker
      */
-    fun setCurrentColor(Hsv: Hsv) {
+    fun userUpdatesColor(Hsv: Hsv) {
         previousHSVColor = Hsv
+    }
+
+    /**
+     * Invokes a lambda do convert the current HSV array stored in the VM to a color int for use.
+     */
+    fun userConfirmsColor() {
+        onConfirmColor?.invoke(previousHSVColor.toColorInt())
     }
 
     /**
@@ -187,14 +174,6 @@ class DrawViewModel : ViewModel() {
     }
 
     /**
-     * Function called to set the state of the gradient picker until it is hooked up to set the color.
-     */
-    fun gradientCompleted() {
-        isColorPickerOpen = false
-        updateViewStates()
-    }
-
-    /**
      * Function called to set the state of the BottomSheet
      */
     fun bottomSheetDone() {
@@ -204,7 +183,6 @@ class DrawViewModel : ViewModel() {
     private fun updateViewStates() {
         onUpdate?.invoke(
             ViewState(
-                primaryColor,
                 currentBitmap,
                 layerList,
                 currentLayerName,
@@ -212,7 +190,6 @@ class DrawViewModel : ViewModel() {
                 isAddOrEditDialogOpen,
                 isDeleteDialogOpen,
                 isBottomSheetOpen,
-                isColorPickerOpen,
                 previousHSVColor
             ),
         )
