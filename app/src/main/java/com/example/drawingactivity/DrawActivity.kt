@@ -14,7 +14,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 
-
 class DrawActivity : AppCompatActivity() {
 
     private val viewModel: DrawViewModel by viewModels()
@@ -23,7 +22,14 @@ class DrawActivity : AppCompatActivity() {
     private var isEditDialogOpen = false
     private var isDeleteDialogOpen = false
     private var isLayerListViewSheetOpen = false
-    lateinit var behavior: BottomSheetBehavior<LinearLayout>
+    private val toolMap = mapOf(
+        Pair(ToolType.GRADIENT, ToolButtonData(R.id.pickerButton, R.id.colorSelectorLayout)),
+        Pair(ToolType.BRUSH, ToolButtonData(R.id.brushButton, R.id.brushLayout)),
+        Pair(ToolType.MOVE, ToolButtonData(R.id.moveButton, R.id.moveLayout)),
+        Pair(ToolType.RESIZE, ToolButtonData(R.id.resizeButton, R.id.resizeLayout)),
+        Pair(ToolType.FILTER, ToolButtonData(R.id.filterButton, R.id.filterLayout)),
+        Pair(ToolType.LAYERS, ToolButtonData(R.id.layerButton, R.id.layerLayout)),
+    )
 
     /**
      * Saves the status of the layerList dialog if the user happens to somehow close or leave it after hitting edit or delete.
@@ -41,16 +47,14 @@ class DrawActivity : AppCompatActivity() {
         val bottomSheet = coordinator.findViewById<LinearLayout>(R.id.toolLayout)
         val currentColorSelection = bottomSheet.findViewById<CurrentColorView>(R.id.pickerButton)
         val previousColorSelection = bottomSheet.findViewById<View>(R.id.bottomColor)
-        behavior = BottomSheetBehavior.from(bottomSheet)
-        listOf<View>(
-            bottomSheet.findViewById<CurrentColorView>(R.id.pickerButton),
-            bottomSheet.findViewById<ImageView>(R.id.brushButton),
-            bottomSheet.findViewById<ImageView>(R.id.moveButton),
-            bottomSheet.findViewById<ImageView>(R.id.resizeButton),
-            bottomSheet.findViewById<ImageView>(R.id.filterButton),
-            bottomSheet.findViewById<ImageView>(R.id.layerButton),
-        ).forEach {
-            it.setOnClickListener { behavior.state = BottomSheetBehavior.STATE_EXPANDED }
+        val behavior = BottomSheetBehavior.from(bottomSheet)
+        toolMap.forEach { toolData ->
+            findViewById<View>(toolData.value.view).setOnClickListener {
+                behavior.state = BottomSheetBehavior.STATE_EXPANDED
+                viewModel.toolIconClicked(toolData.value)
+                toolData.value.showView(bottomSheet, toolMap)
+                toolData.value.fadeInView(bottomSheet, toolData.value.layout)
+            }
         }
 
         dialogUtils.colorPickerCalculations(bottomSheet = bottomSheet,
@@ -105,6 +109,8 @@ class DrawActivity : AppCompatActivity() {
             }
         }
 
+        viewModel.initialize()
+
         viewModel.apply {
             onAddLayer = {
                 Toast.makeText(
@@ -149,6 +155,7 @@ class DrawActivity : AppCompatActivity() {
             if (it.layerList.isEmpty()) {
                 viewModel.addLayer(LayerViewModel(this.getString(R.string.layerHint, 1)))
             }
+            it.activeTool.showView(bottomSheet, toolMap)
             if (!it.isLayerListViewSheetOpen && it.isDialogOpen && !isAddDialogOpen) {
                 isAddDialogOpen = true
                 dialogUtils.showDialog(

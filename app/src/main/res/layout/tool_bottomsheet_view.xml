@@ -52,7 +52,7 @@
             android:layout_marginTop="@dimen/bottomSheetMarginTop"
             android:layout_marginEnd="@dimen/bottomSheetButtonMargin"
             android:layout_marginBottom="@dimen/bottomSheetMarginBottom"
-            android:background="@drawable/ic_move" />
+            android:src="@drawable/ic_move" />
 
         <ImageView
             android:id="@+id/resizeButton"
@@ -83,8 +83,33 @@
     </LinearLayout>
 
     <include
-        android:id="@+id/colorPicker"
+        android:id="@+id/colorSelectorLayout"
         layout="@layout/color_dialog"
         android:visibility="visible" />
+
+    <include
+        android:id="@+id/brushLayout"
+        layout="@layout/brush_layout"
+        android:visibility="gone" />
+
+    <include
+        android:id="@+id/moveLayout"
+        layout="@layout/move_layout"
+        android:visibility="gone" />
+
+    <include
+        android:id="@+id/resizeLayout"
+        layout="@layout/resize_layout"
+        android:visibility="gone" />
+
+    <include
+        android:id="@+id/filterLayout"
+        layout="@layout/filter_layout"
+        android:visibility="gone" />
+
+    <include
+        android:id="@+id/layerLayout"
+        layout="@layout/layer_layout"
+        android:visibility="gone" />
 
 </LinearLayout>

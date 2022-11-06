@@ -198,7 +198,7 @@ object DialogUtils {
          */
         onSubmit: (Hsv?) -> Unit
     ) {
-        val picker = bottomSheet.findViewById<LinearLayout>(R.id.colorPicker)
+        val picker = bottomSheet.findViewById<LinearLayout>(R.id.colorSelectorLayout)
         val huePicker = picker.findViewById<HueView>(R.id.huePicker)
         val gradientPicker = picker.findViewById<GradientView>(R.id.gradientPicker)
         val hexText = picker.findViewById<ForcableEditText>(R.id.hexText)

@@ -18,7 +18,10 @@ class DrawViewModel : ViewModel() {
     private var isAddOrEditDialogOpen = false
     private var isDeleteDialogOpen = false
     private var isBottomSheetOpen = false
-    private var previousHSVColor: Hsv = Hsv(0f, 1f, 1f)
+    private var isColorPickerOpen = false
+    private var currentTool: ToolButtonData =
+        ToolButtonData(R.id.pickerButton, R.id.colorSelectorLayout)
+    private var previousHSVColor: Hsv = Hsv()
 
     /**
      * Invoked when a view requests an update from the viewModel.
@@ -59,7 +62,9 @@ class DrawViewModel : ViewModel() {
         val isDialogOpen: Boolean,
         val isDeleteDialogOpen: Boolean,
         val isLayerListViewSheetOpen: Boolean,
-        val hsvArray: Hsv
+        val isColorPickerSheetOpen: Boolean,
+        val currentHsv: Hsv,
+        val activeTool: ToolButtonData,
     )
 
     /**
@@ -68,6 +73,10 @@ class DrawViewModel : ViewModel() {
     fun setCurrentBitmapState(bitmap: Bitmap?) {
         currentBitmap = bitmap
         updateViewStates()
+    }
+
+    fun toolIconClicked(tool: ToolButtonData) {
+        currentTool = tool
     }
 
     /**
@@ -180,6 +189,10 @@ class DrawViewModel : ViewModel() {
         isBottomSheetOpen = false
     }
 
+    fun initialize() {
+        updateViewStates()
+    }
+
     private fun updateViewStates() {
         onUpdate?.invoke(
             ViewState(
@@ -190,8 +203,14 @@ class DrawViewModel : ViewModel() {
                 isAddOrEditDialogOpen,
                 isDeleteDialogOpen,
                 isBottomSheetOpen,
-                previousHSVColor
+                isColorPickerOpen,
+                previousHSVColor,
+                currentTool,
             ),
         )
     }
+}
+
+enum class ToolType {
+    GRADIENT, BRUSH, MOVE, RESIZE, FILTER, LAYERS
 }
