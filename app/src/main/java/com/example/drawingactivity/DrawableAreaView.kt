@@ -4,7 +4,8 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
-import android.graphics.Color.*
+import android.graphics.Color.RED
+import android.graphics.Color.WHITE
 import android.graphics.Paint
 import android.graphics.Path
 import android.util.AttributeSet
@@ -33,6 +34,7 @@ class DrawableAreaView @JvmOverloads constructor(
      */
     var onBitmapDrawn: ((Bitmap?) -> Unit)? = null
     private var userDrawnBitmap: Bitmap? = null
+    private var lastBitmap: Bitmap? = null
     private var path: Path? = null
 
     init {
@@ -57,6 +59,12 @@ class DrawableAreaView @JvmOverloads constructor(
 
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
+        lastBitmap.let { bitmap ->
+            if (bitmap != null) {
+                setBitmap(bitmap)
+                lastBitmap = null
+            }
+        }
         canvas?.apply {
             drawColor(WHITE)
             if (userDrawnBitmap == null) {
@@ -68,7 +76,9 @@ class DrawableAreaView @JvmOverloads constructor(
     }
 
     fun setBitmap(bitmap: Bitmap) {
-        userDrawnBitmap = bitmap
+        if (userDrawnBitmap == null) {
+            lastBitmap = bitmap
+        } else userDrawnBitmap = bitmap
     }
 
     companion object {

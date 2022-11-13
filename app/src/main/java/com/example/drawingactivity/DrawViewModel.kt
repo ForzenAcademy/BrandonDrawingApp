@@ -19,8 +19,7 @@ class DrawViewModel : ViewModel() {
     private var isDeleteDialogOpen = false
     private var isBottomSheetOpen = false
     private var isColorPickerOpen = false
-    private var currentTool: ToolButtonData =
-        ToolButtonData(R.id.pickerButton, R.id.colorSelectorLayout)
+    private var currentTool: ToolType = ToolType.GRADIENT
     private var previousHSVColor: Hsv = Hsv()
 
     /**
@@ -64,7 +63,7 @@ class DrawViewModel : ViewModel() {
         val isLayerListViewSheetOpen: Boolean,
         val isColorPickerSheetOpen: Boolean,
         val currentHsv: Hsv,
-        val activeTool: ToolButtonData,
+        val activeTool: ToolType,
     )
 
     /**
@@ -75,7 +74,7 @@ class DrawViewModel : ViewModel() {
         updateViewStates()
     }
 
-    fun toolIconClicked(tool: ToolButtonData) {
+    fun toolIconClicked(tool: ToolType) {
         currentTool = tool
     }
 
@@ -180,6 +179,15 @@ class DrawViewModel : ViewModel() {
         isAddOrEditDialogOpen = false
         currentModel = null
         updateViewStates()
+    }
+
+    /**
+     * Occurs when the user cancels any dialog.
+     * Sets all Dialog variables to false.
+     */
+    fun dialogComplete() {
+        isDeleteDialogOpen = false
+        isAddOrEditDialogOpen = false
     }
 
     /**
