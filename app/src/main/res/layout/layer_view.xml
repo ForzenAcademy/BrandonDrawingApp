@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:orientation="horizontal"
+    android:id="@+id/layerViewLayout"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:gravity="center">
+    android:gravity="center"
+    android:orientation="horizontal">
 
     <View
         android:layout_width="0dp"
@@ -15,25 +16,25 @@
         android:id="@+id/layerName"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:padding="@dimen/bottomSheetMarginTop"
-        android:textSize="18sp"
         android:layout_weight="1"
         android:gravity="center"
-        tools:text="This is a Sample Name"/>
+        android:padding="@dimen/bottomSheetMarginTop"
+        android:textSize="18sp"
+        tools:text="This is a Sample Name" />
 
     <ImageView
         android:id="@+id/deleteLayer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:src="@drawable/ic_delete"
-        android:padding="@dimen/bottomSheetMarginTop"/>
+        android:padding="@dimen/bottomSheetMarginTop"
+        android:src="@drawable/ic_delete" />
 
     <ImageView
         android:id="@+id/editName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:src="@drawable/ic_edit"
-        android:padding="@dimen/bottomSheetMarginTop"/>
+        android:padding="@dimen/bottomSheetMarginTop"
+        android:src="@drawable/ic_edit" />
 
     <View
         android:layout_width="0dp"

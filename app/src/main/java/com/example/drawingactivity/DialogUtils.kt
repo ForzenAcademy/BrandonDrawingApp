@@ -3,25 +3,25 @@ package com.example.drawingactivity
 import android.content.Context
 import android.graphics.Color
 import android.graphics.Color.parseColor
-import android.view.LayoutInflater
-import android.view.View
 import android.widget.Button
-import android.widget.EditText
 import android.widget.LinearLayout
-import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
 import androidx.core.widget.addTextChangedListener
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.example.drawingactivity.Hsv.Companion.calculateHex
 import com.example.drawingactivity.InputLimitations.CHAR_LIMIT
+import com.example.drawingactivity.databinding.AddLayerDialogBinding
+import com.example.drawingactivity.databinding.ColorDialogBinding
+import com.example.drawingactivity.databinding.RecyclerLayerListLayoutBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
 import com.google.android.material.bottomsheet.BottomSheetDialog
 
 object DialogUtils {
 
     fun showDialog(
+        binding: AddLayerDialogBinding,
         context: Context,
         layerList: List<LayerViewModel>,
         previousInput: String?,
@@ -36,11 +36,10 @@ object DialogUtils {
          */
         onSubmit: ((String?) -> Unit),
     ) {
-        val view = LayoutInflater.from(context).inflate(R.layout.add_layer_dialog, null)
         val builder = AlertDialog.Builder(context)
-        builder.setView(view)
-        val errorView = view.findViewById<TextView>(R.id.errorText)
-        val textField = view.findViewById<EditText>(R.id.layerNameField)
+        builder.setView(binding.root)
+        val errorView = binding.errorText
+        val textField = binding.layerNameField
         textField.hint = createLayerHint(context, layerList)
         if (previousInput != null) {
             textField.setText(previousInput)
@@ -112,6 +111,7 @@ object DialogUtils {
     }
 
     fun layerListBottomSheet(
+        binding: RecyclerLayerListLayoutBinding,
         context: Context,
         layerList: List<LayerViewModel>,
         /**
@@ -129,10 +129,8 @@ object DialogUtils {
         onSheetComplete: (() -> Unit)?,
     ): ((LayerViewModel?, LayerViewModel?, DialogOperation) -> Unit) {
         val sheet = BottomSheetDialog(context)
-        val view = LayoutInflater.from(context).inflate(R.layout.recycler_layer_list_layout, null)
         val data = layerList.map { it }.toMutableList()
-        val recyclerView = view.findViewById<RecyclerView>(R.id.listOfLayers)
-        recyclerView.apply {
+        binding.listOfLayers.apply {
             layoutManager = LinearLayoutManager(context)
             adapter = RecyclerViewAdapter(data = data,
                 onDeleteLayer = { onDelete?.invoke(it) },
@@ -143,18 +141,17 @@ object DialogUtils {
                 dismiss()
                 onSheetComplete?.invoke()
             }
-            setContentView(view)
+            setContentView(binding.recyclerListViewLayout)
             show()
+            behavior.state = STATE_EXPANDED
+            behavior.isDraggable = false
         }
-        val behavior = BottomSheetBehavior.from(view.parent as View)
-        behavior.state = BottomSheetBehavior.STATE_EXPANDED
-        behavior.isDraggable = false
         return { model, newModel, operation ->
             when (operation) {
                 DialogOperation.ADD -> {
                     if (newModel != null) {
                         data.add(newModel)
-                        recyclerView.adapter?.notifyItemInserted(data.size)
+                        binding.listOfLayers.adapter?.notifyItemInserted(data.size)
                     }
                 }
                 DialogOperation.EDIT -> {
@@ -162,7 +159,7 @@ object DialogUtils {
                         val index = data.indexOf(model)
                         if (newModel != null) {
                             data[index] = newModel
-                            recyclerView.adapter?.notifyItemChanged(index, newModel)
+                            binding.listOfLayers.adapter?.notifyItemChanged(index, newModel)
                         }
                     }
                 }
@@ -170,7 +167,7 @@ object DialogUtils {
                     model?.let {
                         val index = data.indexOf(model)
                         data.removeAt(index)
-                        recyclerView.adapter?.notifyItemRemoved(index)
+                        binding.listOfLayers.adapter?.notifyItemRemoved(index)
                     }
                 }
             }
@@ -184,7 +181,7 @@ object DialogUtils {
      * onSubmit will confirm the HSV as the new Color.
      */
     fun colorPickerCalculations(
-        bottomSheet: LinearLayout,
+        picker: ColorDialogBinding,
         behavior: BottomSheetBehavior<LinearLayout>,
         lastHsv: Hsv?,
         /**
@@ -198,117 +195,106 @@ object DialogUtils {
          */
         onSubmit: (Hsv?) -> Unit
     ) {
-        val picker = bottomSheet.findViewById<LinearLayout>(R.id.colorSelectorLayout)
-        val huePicker = picker.findViewById<HueView>(R.id.huePicker)
-        val gradientPicker = picker.findViewById<GradientView>(R.id.gradientPicker)
-        val hexText = picker.findViewById<ForcableEditText>(R.id.hexText)
-        val hueText = picker.findViewById<ForcableEditText>(R.id.hueText)
-        val satText = picker.findViewById<ForcableEditText>(R.id.satText)
-        val valText = picker.findViewById<ForcableEditText>(R.id.valText)
-        val redText = picker.findViewById<ForcableEditText>(R.id.redText)
-        val greenText = picker.findViewById<ForcableEditText>(R.id.greenText)
-        val blueText = picker.findViewById<ForcableEditText>(R.id.blueText)
-        val topColorSquare = picker.findViewById<View>(R.id.topColor)
-        val bottomColorSquare = picker.findViewById<View>(R.id.bottomColor)
-        val confirmButton = picker.findViewById<Button>(R.id.okButton)
-        val allText = listOf(hexText, hueText, satText, valText, redText, greenText, blueText)
-        confirmButton.setOnClickListener {
-            if (hueText.intValueOrNull != null && satText.intValueOrNull != null && valText.intValueOrNull != null) {
-                onSubmit.invoke(
-                    Hsv(
-                        hueText.floatValue, satText.floatValue / 100, valText.floatValue / 100
+        // use as .apply with the viewbinding to reduce verbosity of code. apply block can cover the whole section
+        picker.apply {
+            val allText = listOf(hexText, hueText, satText, valText, redText, greenText, blueText)
+            okButton.setOnClickListener {
+                if (hueText.intValueOrNull != null && satText.intValueOrNull != null && valText.intValueOrNull != null) {
+                    onSubmit.invoke(
+                        Hsv(
+                            hueText.floatValue, satText.floatValue / 100, valText.floatValue / 100
+                        )
                     )
-                )
+                }
             }
-        }
-        val cancelButton = bottomSheet.findViewById<Button>(R.id.cancelButton)
-        cancelButton.setOnClickListener {
-            onSubmit.invoke(null)
-            behavior.state = BottomSheetBehavior.STATE_COLLAPSED
-        }
-        /**
-         * Lambda that updates all the views in the gradient.
-         * Takes in a color state data class to update views.
-         */
-        val forceViewUpdates: ((Hsv) -> Unit) = { hsv ->
-            val rgb = Hsv.toColor(hsv)
-            val hex = calculateHex(rgb as IntArray)
-            huePicker.setHue(hsv.hue)
-            gradientPicker.setCurrentHsv(hsv)
-            hexText.forceText(hex)
-            hueText.forceText(hsv.hue.toInt().toString())
-            satText.forceText((hsv.saturation * 100).toInt().toString())
-            valText.forceText((hsv.value * 100).toInt().toString())
-            redText.forceText(rgb[0].toString())
-            greenText.forceText(rgb[1].toString())
-            blueText.forceText(rgb[2].toString())
-            topColorSquare.setBackgroundColor(parseColor(hex))
-        }
-        if (lastHsv != null) {
-            val rgb = Hsv.toColor(lastHsv)
-            val hex = calculateHex(rgb as IntArray)
-            bottomColorSquare.setBackgroundColor(parseColor(hex))
-            forceViewUpdates.invoke(lastHsv)
-        }
-        listOf(redText, greenText, blueText).forEach {
-            it.addTextChangedListener {
-                if (redText.intValueOrNull != null && greenText.intValueOrNull != null && blueText.intValueOrNull != null) {
+            cancelButton.setOnClickListener {
+                onSubmit.invoke(null)
+                behavior.state = BottomSheetBehavior.STATE_COLLAPSED
+            }
+            /**
+             * Lambda that updates all the views in the gradient.
+             * Takes in a color state data class to update views.
+             */
+            val forceViewUpdates: ((Hsv) -> Unit) = { hsv ->
+                val rgb = Hsv.toColor(hsv)
+                val hex = calculateHex(rgb as IntArray)
+                huePicker.setHue(hsv.hue)
+                gradientPicker.setCurrentHsv(hsv)
+                hexText.forceText(hex)
+                hueText.forceText(hsv.hue.toInt().toString())
+                satText.forceText((hsv.saturation * 100).toInt().toString())
+                valText.forceText((hsv.value * 100).toInt().toString())
+                redText.forceText(rgb[0].toString())
+                greenText.forceText(rgb[1].toString())
+                blueText.forceText(rgb[2].toString())
+                topColor.setBackgroundColor(parseColor(hex))
+            }
+            if (lastHsv != null) {
+                val rgb = Hsv.toColor(lastHsv)
+                val hex = calculateHex(rgb as IntArray)
+                bottomColor.setBackgroundColor(parseColor(hex))
+                forceViewUpdates.invoke(lastHsv)
+            }
+            listOf(redText, greenText, blueText).forEach {
+                it.addTextChangedListener {
+                    if (redText.intValueOrNull != null && greenText.intValueOrNull != null && blueText.intValueOrNull != null) {
+                        val hsv = Hsv.toColor(
+                            intArrayOf(
+                                redText.intValue, greenText.intValue, blueText.intValue
+                            )
+                        )
+                        forceViewUpdates.invoke(hsv as Hsv)
+                        onColorAdjust.invoke(hsv)
+                    }
+                }
+            }
+            listOf(hueText, satText, valText).forEach {
+                it.addTextChangedListener {
+                    if (hueText.intValueOrNull != null && satText.intValueOrNull != null && valText.intValueOrNull != null) {
+                        val hsv =
+                            Hsv(hueText.floatValue, satText.floatValue / 100, valText.floatValue / 100)
+                        forceViewUpdates.invoke(hsv)
+                        onColorAdjust.invoke(hsv)
+                    }
+                }
+            }
+            huePicker.apply {
+                onHueChanged = { hue ->
+                    if (satText.intValueOrNull != null && valText.intValueOrNull != null) {
+                        val hsv = Hsv(hue, satText.floatValue / 100, valText.floatValue / 100)
+                        clearAllFocus(allText)
+                        forceViewUpdates.invoke(hsv)
+                        onColorAdjust.invoke(hsv)
+                    }
+                    onSliderClicked = { viewClicked ->
+                        behavior.isDraggable = !viewClicked
+                    }
+                }
+            }
+            gradientPicker.apply {
+                onSatValChanged = { saturation, value ->
+                    if (hueText.intValueOrNull != null) {
+                        val hsv = Hsv(hueText.floatValue, saturation, value)
+                        clearAllFocus(allText)
+                        forceViewUpdates.invoke(hsv)
+                        onColorAdjust.invoke(hsv)
+                    }
+                }
+                onGradientClicked = { viewClicked ->
+                    behavior.isDraggable = !viewClicked
+                }
+            }
+            hexText.addTextChangedListener {
+                if (ColorUtils.isHexadecimal(it.toString())) {
+                    val color = parseColor(it.toString())
                     val hsv = Hsv.toColor(
                         intArrayOf(
-                            redText.intValue, greenText.intValue, blueText.intValue
+                            Color.red(color), Color.green(color), Color.blue(color)
                         )
                     )
                     forceViewUpdates.invoke(hsv as Hsv)
                     onColorAdjust.invoke(hsv)
                 }
-            }
-        }
-        listOf(hueText, satText, valText).forEach {
-            it.addTextChangedListener {
-                if (hueText.intValueOrNull != null && satText.intValueOrNull != null && valText.intValueOrNull != null) {
-                    val hsv =
-                        Hsv(hueText.floatValue, satText.floatValue / 100, valText.floatValue / 100)
-                    forceViewUpdates.invoke(hsv)
-                    onColorAdjust.invoke(hsv)
-                }
-            }
-        }
-        huePicker?.apply {
-            onHueChanged = { hue ->
-                if (satText.intValueOrNull != null && valText.intValueOrNull != null) {
-                    val hsv = Hsv(hue, satText.floatValue / 100, valText.floatValue / 100)
-                    clearAllFocus(allText)
-                    forceViewUpdates.invoke(hsv)
-                    onColorAdjust.invoke(hsv)
-                }
-                onSliderClicked = { viewClicked ->
-                    behavior.isDraggable = !viewClicked
-                }
-            }
-        }
-        gradientPicker?.apply {
-            onSatValChanged = { saturation, value ->
-                if (hueText.intValueOrNull != null) {
-                    val hsv = Hsv(hueText.floatValue, saturation, value)
-                    clearAllFocus(allText)
-                    forceViewUpdates.invoke(hsv)
-                    onColorAdjust.invoke(hsv)
-                }
-            }
-            onGradientClicked = { viewClicked ->
-                behavior.isDraggable = !viewClicked
-            }
-        }
-        hexText.addTextChangedListener {
-            if (ColorUtils.isHexadecimal(it.toString())) {
-                val color = parseColor(it.toString())
-                val hsv = Hsv.toColor(
-                    intArrayOf(
-                        Color.red(color), Color.green(color), Color.blue(color)
-                    )
-                )
-                forceViewUpdates.invoke(hsv as Hsv)
-                onColorAdjust.invoke(hsv)
             }
         }
     }

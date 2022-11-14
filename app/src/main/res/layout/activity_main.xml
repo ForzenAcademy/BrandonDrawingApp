@@ -79,7 +79,9 @@
             android:layout_gravity="bottom"
             android:layout_weight="0.2">
 
-            <include layout="@layout/tool_bottomsheet_view" />
+            <include
+                android:id="@+id/toolbar"
+                layout="@layout/tool_bottomsheet_view" />
         </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
     </LinearLayout>

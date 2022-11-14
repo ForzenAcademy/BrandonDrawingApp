@@ -1,12 +1,13 @@
 package com.example.drawingactivity
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import androidx.viewbinding.ViewBinding
 import com.example.drawingactivity.AdapterViewModel.Companion.LAYER
+import com.example.drawingactivity.databinding.LayerViewBinding
 
 /**
  * This is a RecyclerView that manages a list and how it is displayed in views
@@ -21,7 +22,7 @@ class RecyclerViewAdapter(
         val inflater = LayoutInflater.from(parent.context)
         return when (viewType) {
             LAYER -> LayerViewHolder(
-                inflater.inflate(R.layout.layer_view, parent, false),
+                LayerViewBinding.inflate(inflater, parent, false),
                 onDeleteLayer,
                 onEditName
             )
@@ -50,7 +51,7 @@ class LayerViewModel(
     val layerName: String?,
 ) : AdapterViewModel(LAYER)
 
-abstract class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+abstract class ViewHolder(view: ViewBinding) : RecyclerView.ViewHolder(view.root) {
     abstract fun bind(model: AdapterViewModel)
 }
 
@@ -61,7 +62,7 @@ abstract class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
  * onEditLayer is called when the edit icon is pressed and pass the position of the view.
  */
 class LayerViewHolder(
-    view: View,
+    view: LayerViewBinding,
     private val onDeleteLayer: ((LayerViewModel) -> Unit)?,
     private val onEditName: ((LayerViewModel) -> Unit)?
 ) : ViewHolder(view) {
@@ -70,9 +71,9 @@ class LayerViewHolder(
     private val editLayerNameView: ImageView
 
     init {
-        layerView = view.findViewById(R.id.layerName)
-        deleteLayerView = view.findViewById(R.id.deleteLayer)
-        editLayerNameView = view.findViewById(R.id.editName)
+        layerView = view.layerName
+        deleteLayerView = view.deleteLayer
+        editLayerNameView = view.editName
     }
 
     override fun bind(model: AdapterViewModel) {

@@ -3,15 +3,13 @@ package com.example.drawingactivity
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.view.View
-import android.widget.Button
-import android.widget.ImageView
-import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.coordinatorlayout.widget.CoordinatorLayout
+import com.example.drawingactivity.databinding.ActivityMainBinding
+import com.example.drawingactivity.databinding.AddLayerDialogBinding
+import com.example.drawingactivity.databinding.RecyclerLayerListLayoutBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 
 class DrawActivity : AppCompatActivity() {
@@ -22,14 +20,6 @@ class DrawActivity : AppCompatActivity() {
     private var isEditDialogOpen = false
     private var isDeleteDialogOpen = false
     private var isLayerListViewSheetOpen = false
-    private val toolMap = mapOf(
-        Pair(ToolType.GRADIENT, ToolButtonData(R.id.pickerButton, R.id.colorSelectorLayout)),
-        Pair(ToolType.BRUSH, ToolButtonData(R.id.brushButton, R.id.brushLayout)),
-        Pair(ToolType.MOVE, ToolButtonData(R.id.moveButton, R.id.moveLayout)),
-        Pair(ToolType.RESIZE, ToolButtonData(R.id.resizeButton, R.id.resizeLayout)),
-        Pair(ToolType.FILTER, ToolButtonData(R.id.filterButton, R.id.filterLayout)),
-        Pair(ToolType.LAYERS, ToolButtonData(R.id.layerButton, R.id.layerLayout)),
-    )
 
     /**
      * Saves the status of the layerList dialog if the user happens to somehow close or leave it after hitting edit or delete.
@@ -40,24 +30,57 @@ class DrawActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-        val drawableArea = findViewById<DrawableAreaView>(R.id.drawableArea)
-        drawableArea.onBitmapDrawn = { bitmap -> viewModel.setCurrentBitmapState(bitmap) }
-        val coordinator = findViewById<CoordinatorLayout>(R.id.coordinator)
-        val bottomSheet = coordinator.findViewById<LinearLayout>(R.id.toolLayout)
-        val currentColorSelection = bottomSheet.findViewById<CurrentColorView>(R.id.pickerButton)
-        val previousColorSelection = bottomSheet.findViewById<View>(R.id.bottomColor)
-        val behavior = BottomSheetBehavior.from(bottomSheet)
+        val binding = ActivityMainBinding.inflate(layoutInflater)
+        val view = binding.root
+        setContentView(view)
+        val bottomSheet = binding.toolbar
+        val colorPicker = bottomSheet.colorSelectorLayout
+        val toolMap = mapOf(
+            Pair(
+                ToolType.GRADIENT,
+                ToolButtonData(bottomSheet.pickerButton, bottomSheet.colorSelectorLayout.root)
+            ),
+            Pair(
+                ToolType.BRUSH,
+                ToolButtonData(bottomSheet.brushButton, bottomSheet.brushLayout.root)
+            ),
+            Pair(
+                ToolType.MOVE,
+                ToolButtonData(bottomSheet.moveButton, bottomSheet.moveLayout.root)
+            ),
+            Pair(
+                ToolType.RESIZE,
+                ToolButtonData(bottomSheet.resizeButton, bottomSheet.resizeLayout.root)
+            ),
+            Pair(
+                ToolType.FILTER,
+                ToolButtonData(bottomSheet.filterButton, bottomSheet.filterLayout.root)
+            ),
+            Pair(
+                ToolType.LAYERS,
+                ToolButtonData(bottomSheet.layerButton, bottomSheet.layerLayout.root)
+            ),
+        )
+
+        val drawableArea = binding.drawableArea
+        drawableArea.onBitmapDrawn = { bitmap ->
+            viewModel.setCurrentBitmapState(bitmap)
+            if (bitmap != null) {
+                drawableArea.setBitmap(bitmap)
+            }
+        }
+        val previousColorSelection = colorPicker.bottomColor
+        val behavior = BottomSheetBehavior.from(bottomSheet.toolLayout)
         toolMap.forEach { toolData ->
-            findViewById<View>(toolData.value.view).setOnClickListener {
+            toolData.value.view.setOnClickListener {
                 behavior.state = BottomSheetBehavior.STATE_EXPANDED
-                viewModel.toolIconClicked(toolData.value)
-                toolData.value.showView(bottomSheet, toolMap)
-                toolData.value.fadeInView(bottomSheet, toolData.value.layout)
+                viewModel.toolIconClicked(toolData.key)
+                toolData.value.showView(bottomSheet.toolLayout, toolMap)
+                toolData.value.fadeInView(bottomSheet.toolLayout, toolData.value.layout)
             }
         }
 
-        dialogUtils.colorPickerCalculations(bottomSheet = bottomSheet,
+        dialogUtils.colorPickerCalculations(picker = colorPicker,
             behavior = behavior,
             lastHsv = Hsv(),
             onColorAdjust = { hsv -> hsv?.let { viewModel.userUpdatesColor(hsv) } },
@@ -68,28 +91,15 @@ class DrawActivity : AppCompatActivity() {
                 }
             })
 
-        currentColorSelection.setOnClickListener {
-            dialogUtils.colorPickerCalculations(bottomSheet = bottomSheet,
-                behavior = behavior,
-                lastHsv = Hsv(),
-                onColorAdjust = { hsv -> hsv?.let { viewModel.userUpdatesColor(hsv) } },
-                onSubmit = { hsv ->
-                    hsv?.let {
-                        viewModel.userUpdatesColor(hsv)
-                        viewModel.userConfirmsColor()
-                    }
-                })
-        }
-
-        findViewById<Button>(R.id.addLayer).setOnClickListener {
+        binding.addLayer.setOnClickListener {
             viewModel.addOrEditClicked()
         }
 
-        findViewById<Button>(R.id.viewLayers).setOnClickListener {
+        binding.viewLayers.setOnClickListener {
             viewModel.bottomSheetOpened()
         }
 
-        val imageView = findViewById<ImageView>(R.id.placeImage)
+        val imageView = binding.placeImage
         val imageContent = registerForActivityResult(ActivityResultContracts.GetContent()) { it ->
             it?.let { uri ->
                 BitmapFromUri(context = this, url = uri, onComplete = {
@@ -103,7 +113,7 @@ class DrawActivity : AppCompatActivity() {
             }
         }
 
-        findViewById<Button>(R.id.grabImage).setOnClickListener {
+        binding.grabImage.setOnClickListener {
             Intent(it.context, DrawActivity::class.java).apply {
                 imageContent.launch("image/*")
             }
@@ -143,7 +153,7 @@ class DrawActivity : AppCompatActivity() {
             }
             onConfirmColor = {
                 if (it != null) {
-                    currentColorSelection.setCircleColor(it)
+                    bottomSheet.pickerButton.setCircleColor(it)
                     drawableArea.setPathColor(it)
                     previousColorSelection.setBackgroundColor(it)
                 }
@@ -151,32 +161,35 @@ class DrawActivity : AppCompatActivity() {
         }
 
         viewModel.onUpdate = {
-            it.currentBitmap?.let { bitmap -> drawableArea.setBitmap(bitmap) }
+            it.currentBitmap?.let { bitmap ->
+                Log.v("brabrabra vm bitmap", it.currentBitmap.toString())
+                drawableArea.setBitmap(bitmap)
+            }
             if (it.layerList.isEmpty()) {
                 viewModel.addLayer(LayerViewModel(this.getString(R.string.layerHint, 1)))
             }
-            it.activeTool.showView(bottomSheet, toolMap)
+            toolMap[it.activeTool]?.showView(bottomSheet.toolLayout, toolMap)
             if (!it.isLayerListViewSheetOpen && it.isDialogOpen && !isAddDialogOpen) {
                 isAddDialogOpen = true
                 dialogUtils.showDialog(
+                    binding = AddLayerDialogBinding.inflate(layoutInflater),
                     context = this@DrawActivity,
                     layerList = it.layerList,
                     previousInput = it.currentNewLayerName,
                     onEditText = { layerName -> viewModel.setCurrentText(layerName) },
                     onSubmit = { layerName ->
                         val model = LayerViewModel(layerName)
-                        viewModel.addLayer(model)
                         if (layerName != null) {
-                            onLayerListUpdate?.invoke(
-                                null, null, DialogOperation.ADD
-                            )
+                            viewModel.addLayer(model)
                         }
                     },
                 )
             } else isAddDialogOpen = false
             if (it.isLayerListViewSheetOpen && !isLayerListViewSheetOpen) {
                 isLayerListViewSheetOpen = true
-                onLayerListUpdate = dialogUtils.layerListBottomSheet(context = this,
+                onLayerListUpdate = dialogUtils.layerListBottomSheet(
+                    binding = RecyclerLayerListLayoutBinding.inflate(layoutInflater),
+                    context = this,
                     layerList = it.layerList,
                     onSheetComplete = {
                         isLayerListViewSheetOpen = false
@@ -186,45 +199,14 @@ class DrawActivity : AppCompatActivity() {
                         viewModel.setCurrentModel(model)
                         viewModel.deleteClicked()
                         isDeleteDialogOpen = true
-                        if (it.isDeleteDialogOpen) {
-                            dialogUtils.confirmationDialog(context = this@DrawActivity,
-                                title = this@DrawActivity.getString(R.string.deleteLayerDialogTitle),
-                                message = this@DrawActivity.getString(
-                                    R.string.deleteLayerDialogBody, model.layerName
-                                ),
-                                onSubmit = { isConfirmed ->
-                                    viewModel.setCurrentModel(model)
-                                    viewModel.deleteLayer(model, isConfirmed)
-                                    if (isConfirmed) {
-                                        onLayerListUpdate?.invoke(
-                                            model, null, DialogOperation.DELETE
-                                        )
-                                    }
-                                })
-                        }
                     },
                     onEdit = { model ->
-                        isEditDialogOpen = true
-                        viewModel.addOrEditClicked()
                         viewModel.setCurrentModel(model)
-                        dialogUtils.showDialog(
-                            context = this,
-                            layerList = it.layerList,
-                            onEditText = { layerName -> viewModel.setCurrentText(layerName) },
-                            previousInput = it.currentNewLayerName,
-                            onSubmit = { newLayerName ->
-                                val newModel = LayerViewModel(newLayerName)
-                                viewModel.editLayer(newModel, model)
-                                if (newLayerName != null) {
-                                    onLayerListUpdate?.invoke(
-                                        model, newModel, DialogOperation.EDIT
-                                    )
-                                }
-                            },
-                        )
+                        viewModel.addOrEditClicked()
+                        isEditDialogOpen = true
                     })
             }
-            if (it.isDeleteDialogOpen && !isDeleteDialogOpen) {
+            if (it.isLayerListViewSheetOpen && it.isDeleteDialogOpen && !isDeleteDialogOpen) {
                 isDeleteDialogOpen = true
                 dialogUtils.confirmationDialog(context = this@DrawActivity,
                     title = this@DrawActivity.getString(R.string.deleteLayerDialogTitle),
@@ -232,37 +214,42 @@ class DrawActivity : AppCompatActivity() {
                         R.string.deleteLayerDialogBody, it.targetModel?.layerName
                     ),
                     onSubmit = { isConfirmed ->
-                        onLayerListUpdate?.invoke(
-                            it.targetModel, null, DialogOperation.DELETE
-                        )
                         it.targetModel?.let { targetModel ->
                             if (isConfirmed) {
                                 viewModel.deleteLayer(
                                     targetModel, true
                                 )
+                                onLayerListUpdate?.invoke(
+                                    it.targetModel, null, DialogOperation.DELETE
+                                )
                             }
                         }
+                        isDeleteDialogOpen = false
+                        viewModel.dialogComplete()
                     })
             } else isDeleteDialogOpen = false
             if (it.isLayerListViewSheetOpen && it.isDialogOpen && !isEditDialogOpen) {
                 isEditDialogOpen = true
                 dialogUtils.showDialog(
+                    binding = AddLayerDialogBinding.inflate(layoutInflater),
                     context = this,
                     layerList = it.layerList,
                     onEditText = { layerName -> viewModel.setCurrentText(layerName) },
                     previousInput = it.currentNewLayerName,
                     onSubmit = { newName ->
                         val newModel = LayerViewModel(newName)
-                        it.targetModel?.let { targetModel ->
-                            viewModel.editLayer(
-                                newModel, targetModel
-                            )
-                        }
                         if (newName != null) {
+                            it.targetModel?.let { targetModel ->
+                                viewModel.editLayer(
+                                    newModel, targetModel
+                                )
+                            }
                             onLayerListUpdate?.invoke(
                                 it.targetModel, newModel, DialogOperation.EDIT
                             )
                         }
+                        isEditDialogOpen = false
+                        viewModel.dialogComplete()
                     },
                 )
             } else isEditDialogOpen = false
