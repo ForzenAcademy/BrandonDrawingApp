@@ -18,7 +18,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
 import com.google.android.material.bottomsheet.BottomSheetDialog
 
-object DialogUtils {
+open class DialogUtils {
 
     fun showDialog(
         binding: AddLayerDialogBinding,
@@ -195,7 +195,6 @@ object DialogUtils {
          */
         onSubmit: (Hsv?) -> Unit
     ) {
-        // use as .apply with the viewbinding to reduce verbosity of code. apply block can cover the whole section
         picker.apply {
             val allText = listOf(hexText, hueText, satText, valText, redText, greenText, blueText)
             okButton.setOnClickListener {
@@ -285,7 +284,7 @@ object DialogUtils {
                 }
             }
             hexText.addTextChangedListener {
-                if (ColorUtils.isHexadecimal(it.toString())) {
+                if (ColorUtils().isHexadecimal(it.toString())) {
                     val color = parseColor(it.toString())
                     val hsv = Hsv.toColor(
                         intArrayOf(
