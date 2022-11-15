@@ -11,15 +11,17 @@ import com.example.drawingactivity.databinding.ActivityMainBinding
 import com.example.drawingactivity.databinding.AddLayerDialogBinding
 import com.example.drawingactivity.databinding.RecyclerLayerListLayoutBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import javax.inject.Inject
 
 class DrawActivity : AppCompatActivity() {
 
-    private val viewModel: DrawViewModel by viewModels()
-    private val dialogUtils = DialogUtils
     private var isAddDialogOpen = false
     private var isEditDialogOpen = false
     private var isDeleteDialogOpen = false
     private var isLayerListViewSheetOpen = false
+
+    @Inject
+    lateinit var dialogUtils: DialogUtils
 
     /**
      * Saves the status of the layerList dialog if the user happens to somehow close or leave it after hitting edit or delete.
@@ -30,9 +32,14 @@ class DrawActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val viewModel: DrawViewModel by viewModels {
+            MyViewModelFactory(this, savedInstanceState)
+        }
         val binding = ActivityMainBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
+        (application as MyApplication).applicationComponent.inject(this)
+
         val bottomSheet = binding.toolbar
         val colorPicker = bottomSheet.colorSelectorLayout
         val toolMap = mapOf(

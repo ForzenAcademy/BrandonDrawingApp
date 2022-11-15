@@ -1,6 +1,7 @@
 package com.example.drawingactivity
 
 import android.graphics.Bitmap
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 
 /**
@@ -9,7 +10,7 @@ import androidx.lifecycle.ViewModel
  * ViewStates is used in the lambda onUpdate to update views in whatever activity it is invoked from
  * cyclePrimaryColor is the internal function that sets a new Primary Color by selecting from a list
  */
-class DrawViewModel : ViewModel() {
+class DrawViewModel(handle: SavedStateHandle) : ViewModel() {
 
     private var currentBitmap: Bitmap? = null
     private var layerList = mutableListOf<LayerViewModel>()

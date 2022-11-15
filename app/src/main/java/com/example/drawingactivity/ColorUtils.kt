@@ -2,7 +2,7 @@ package com.example.drawingactivity
 
 import java.lang.Integer.parseInt
 
-object ColorUtils {
+class ColorUtils {
 
     /**
      * Function that returns a boolean based on if the string matches a hexadecimal pattern.
